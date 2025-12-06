@@ -27,12 +27,12 @@ dist/
 .vercel
 
 # Environment Variables
-.env
+#.env
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
-*.env
+#*.env
 
 # Python (common in hackathons)
 __pycache__/

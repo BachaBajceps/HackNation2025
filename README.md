@@ -5,6 +5,8 @@
 cd backend
 npm install
 npx prisma generate
+npx prisma db push
+npm run seed
 npm run dev
 ```
 *Serwer wystartuje na http://localhost:3000*

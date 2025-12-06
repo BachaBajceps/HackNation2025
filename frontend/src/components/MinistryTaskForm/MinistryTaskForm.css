@@ -1,0 +1,212 @@
+.ministry-task-form {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+.ministry-task-form__success {
+    background: linear-gradient(135deg, var(--color-success), var(--color-success-dark));
+    color: white;
+    padding: 1rem 1.5rem;
+    border-radius: var(--radius-lg);
+    margin-bottom: 1.5rem;
+    font-weight: 600;
+    text-align: center;
+    animation: ministrySlideDown 0.3s ease;
+}
+
+@keyframes ministrySlideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.ministry-task-form__section {
+    background: var(--color-surface);
+    border-radius: var(--radius-xl);
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--color-border);
+    border-left: 4px solid var(--color-primary);
+}
+
+.ministry-task-form__section-title {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--color-text);
+    margin: 0 0 1.5rem 0;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.ministry-task-form__section-icon {
+    font-size: 1.5rem;
+}
+
+.ministry-task-form__grid {
+    display: grid;
+    gap: 1.25rem;
+    margin-bottom: 1.25rem;
+}
+
+.ministry-task-form__grid:last-child {
+    margin-bottom: 0;
+}
+
+.ministry-task-form__grid--1 {
+    grid-template-columns: 1fr;
+}
+
+.ministry-task-form__grid--2 {
+    grid-template-columns: repeat(2, 1fr);
+}
+
+@media (max-width: 768px) {
+    .ministry-task-form__grid--2 {
+        grid-template-columns: 1fr;
+    }
+
+    .ministry-task-form {
+        padding: 1rem;
+    }
+}
+
+.ministry-task-form__input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-background);
+    color: var(--color-text);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.ministry-task-form__input:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px var(--color-primary-alpha);
+}
+
+.ministry-task-form__input:disabled {
+    background: var(--color-surface-alt);
+    color: var(--color-text-muted);
+    cursor: not-allowed;
+}
+
+/* Currency input wrapper */
+.ministry-task-form__currency-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    position: relative;
+}
+
+.ministry-task-form__input--currency {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+    border-right: none;
+    text-align: right;
+    font-weight: 600;
+    font-size: 1.125rem;
+    padding-right: 0.75rem;
+}
+
+.ministry-task-form__input--currency:focus {
+    border-right: none;
+}
+
+.ministry-task-form__currency-label {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.75rem 1.25rem;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--color-text-secondary);
+    background: var(--color-surface-alt);
+    border: 1px solid var(--color-border);
+    border-left: none;
+    border-radius: 0 var(--radius-md) var(--radius-md) 0;
+    min-width: 50px;
+}
+
+/* Errors */
+.ministry-task-form__errors {
+    background: var(--color-error-bg);
+    border: 1px solid var(--color-error);
+    border-radius: var(--radius-lg);
+    padding: 1.25rem;
+    margin-bottom: 1.5rem;
+}
+
+.ministry-task-form__errors h3 {
+    margin: 0 0 0.75rem 0;
+    color: var(--color-error);
+    font-size: 1rem;
+}
+
+.ministry-task-form__errors ul {
+    margin: 0;
+    padding-left: 1.5rem;
+}
+
+.ministry-task-form__error-item {
+    margin-bottom: 0.375rem;
+    font-size: 0.875rem;
+    color: var(--color-error);
+}
+
+/* Actions */
+.ministry-task-form__actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    padding-top: 1rem;
+}
+
+.ministry-task-form__btn {
+    padding: 0.875rem 2rem;
+    font-size: 1rem;
+    font-weight: 600;
+    border: none;
+    border-radius: var(--radius-lg);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.ministry-task-form__btn--primary {
+    background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+    color: white;
+    box-shadow: var(--shadow-md);
+}
+
+.ministry-task-form__btn--primary:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+
+.ministry-task-form__btn--primary:active {
+    transform: translateY(0);
+}
+
+.ministry-task-form__btn--secondary {
+    background: var(--color-surface);
+    color: var(--color-text-secondary);
+    border: 1px solid var(--color-border);
+}
+
+.ministry-task-form__btn--secondary:hover {
+    background: var(--color-surface-alt);
+    border-color: var(--color-text-muted);
+}

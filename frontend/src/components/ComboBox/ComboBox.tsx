@@ -67,8 +67,8 @@ export const ComboBox: React.FC<ComboBoxProps> = ({
     const handleInputFocus = () => {
         if (!disabled) {
             setIsOpen(true);
-            // When focusing, if we have a value, we might want to select all text or clear it?
-            // For now, let's keep the name there so user can refine it or clear it.
+            // Clear search term when opening to show all options
+            setSearchTerm('');
         }
     };
 

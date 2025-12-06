@@ -1,25 +1,40 @@
+import { useState } from 'react';
 import { BudgetForm } from './components/BudgetForm';
+import { MinistryTaskForm } from './components/MinistryTaskForm';
 import './App.css';
 
+type FormType = 'budget' | 'ministry';
+
 function App() {
+    const [activeForm, setActiveForm] = useState<FormType>('budget');
+
     return (
         <div className="app">
             <header className="app__header">
                 <div className="app__header-content">
                     <h1 className="app__title">
                         <span className="app__logo">📊</span>
-                        Formularz Budżetowy
+                        System Formularzy
                     </h1>
-                    <p className="app__subtitle">Wiersz budżetowy z klasyfikacją i danymi finansowymi</p>
+                    <p className="app__subtitle">Wybierz typ formularza z listy poniżej</p>
                 </div>
-                <div className="app__version">
-                    <span className="app__version-label">Wersja</span>
-                    <span className="app__version-value">Grudzień 2024</span>
+                <div className="app__form-selector">
+                    <label htmlFor="formType" className="app__form-selector-label">Typ formularza:</label>
+                    <select
+                        id="formType"
+                        value={activeForm}
+                        onChange={(e) => setActiveForm(e.target.value as FormType)}
+                        className="app__form-selector-select"
+                    >
+                        <option value="budget">Formularz Budżetowy</option>
+                        <option value="ministry">Formularz Zadania od Ministerstwa</option>
+                    </select>
                 </div>
             </header>
 
             <main className="app__main">
-                <BudgetForm />
+                {activeForm === 'budget' && <BudgetForm />}
+                {activeForm === 'ministry' && <MinistryTaskForm />}
             </main>
 
             <footer className="app__footer">

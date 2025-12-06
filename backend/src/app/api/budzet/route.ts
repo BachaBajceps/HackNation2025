@@ -42,6 +42,7 @@ interface WierszBudzetowy {
 export async function POST(request: NextRequest) {
     try {
         const data: WierszBudzetowy = await request.json();
+        console.log('Received payload:', JSON.stringify(data, null, 2));
 
         // Lookup dictionary IDs by codes
         const czesc = await prisma.czesc_budzetowa.findUnique({
@@ -49,6 +50,7 @@ export async function POST(request: NextRequest) {
         });
 
         if (!czesc) {
+            console.error(`Część budżetowa "${data.czesc}" nie istnieje.`);
             return NextResponse.json(
                 { error: `Część budżetowa "${data.czesc}" nie istnieje w bazie danych. Proszę najpierw zaseedować słowniki.` },
                 { status: 400 }
@@ -71,6 +73,33 @@ export async function POST(request: NextRequest) {
             where: { kod: data.zrodloFinansowania },
         }) : null;
 
+        // Lookup Grupa Wydatków (by name)
+        const grupaWydatkow = data.grupaWydatkow ? await prisma.grupa_wydatkow.findUnique({
+            where: { nazwa: data.grupaWydatkow },
+        }) : null;
+
+        // Lookup Budżet Zadaniowy
+        // This logic mimics the frontend: if full code exists (4 parts), link detailed.
+        // If not, we might link short (2 parts) or nothing.
+        let budzetZadaniowySzczegolowy = null;
+        let budzetZadaniowySkrocony = null;
+
+        if (data.budzetZadaniowyPelny) {
+            // Try to find detailed first
+            budzetZadaniowySzczegolowy = await prisma.budzet_zadaniowy_szczegolowy.findUnique({
+                where: { kod: data.budzetZadaniowyPelny }
+            });
+
+            // If detailed not found, or code is shorter, try simplified
+            // Simplified codes are usually X.X
+            if (!budzetZadaniowySzczegolowy && data.funkcjaZadanie) {
+                budzetZadaniowySkrocony = await prisma.budzet_zadaniowy_skrocony.findUnique({
+                    where: { kod: data.funkcjaZadanie }
+                });
+            }
+        }
+
+
         // Create opis_zadania
         const opisZadania = await prisma.opis_zadania.create({
             data: {
@@ -87,13 +116,16 @@ export async function POST(request: NextRequest) {
         const daneFinansoweIds: number[] = [];
         for (const rok of ['2026', '2027', '2028', '2029'] as const) {
             const daneRoku = data.daneFinansowe[rok];
+            // Ensure numeric values are numbers or null (handle empty strings)
+            const parseNullableFloat = (val: any) => (val === '' || val === null || val === undefined) ? null : parseFloat(val);
+
             const daneFinansowe = await prisma.dane_finansowe.create({
                 data: {
                     rok: parseInt(rok),
-                    potrzeby_finansowe: daneRoku.potrzeby,
-                    limit_wydatkow: daneRoku.limit,
-                    kwota_niezabezpieczona: daneRoku.roznica,
-                    kwota_umowy: daneRoku.zaangazowanie,
+                    potrzeby_finansowe: parseNullableFloat(daneRoku.potrzeby),
+                    limit_wydatkow: parseNullableFloat(daneRoku.limit),
+                    kwota_niezabezpieczona: parseNullableFloat(daneRoku.roznica),
+                    kwota_umowy: parseNullableFloat(daneRoku.zaangazowanie),
                     nr_umowy: daneRoku.nrUmowy,
                 },
             });
@@ -101,8 +133,6 @@ export async function POST(request: NextRequest) {
         }
 
         // Create zadanie_szczegoly (linking opis and dane_finansowe)
-        // Note: In real schema, zadanie_szczegoly links to ONE dane_finansowe
-        // We'll just use the first year's data for now as a simplified approach
         const zadanieSzczegoly = await prisma.zadanie_szczegoly.create({
             data: {
                 opis_zadania_id: opisZadania.id,
@@ -110,15 +140,29 @@ export async function POST(request: NextRequest) {
             },
         });
 
+        console.log('Dictionaries found:', {
+            czesc: czesc?.id,
+            dzial: dzial?.id,
+            rozdzial: rozdzial?.id,
+            paragraf: paragraf?.id,
+            zrodlo: zrodloFinansowania?.id,
+            grupa: grupaWydatkow?.id,
+            bz_szcz: budzetZadaniowySzczegolowy?.id,
+            bz_skr: budzetZadaniowySkrocony?.id
+        });
+
         // Create pozycja_budzetu
         const pozycjaBudzetu = await prisma.pozycja_budzetu.create({
             data: {
                 zadanie_szczegoly_id: zadanieSzczegoly.id,
                 czesc_budzetowa_id: czesc.id,
-                dzial_id: dzial?.id,
-                rozdzial_id: rozdzial?.id,
-                paragraf_id: paragraf?.id,
-                zrodlo_finansowania_id: zrodloFinansowania?.id,
+                dzial_id: dzial?.id ?? null,
+                rozdzial_id: rozdzial?.id ?? null,
+                paragraf_id: paragraf?.id ?? null,
+                zrodlo_finansowania_id: zrodloFinansowania?.id ?? null,
+                grupa_wydatkow_id: grupaWydatkow?.id ?? null,
+                budzet_zadaniowy_szczegolowy_id: budzetZadaniowySzczegolowy?.id ?? null,
+                budzet_zadaniowy_skrocony_id: budzetZadaniowySkrocony?.id ?? null,
                 nazwa_programu_projektu: data.nazwaProjektu,
                 nazwa_komorki_organizacyjnej: data.komorkaOrganizacyjna,
                 plan_wi: data.planWI,

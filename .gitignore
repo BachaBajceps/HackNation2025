@@ -27,12 +27,14 @@ dist/
 .vercel
 
 # Environment Variables
-.env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-*.env
+
+# Environment Variables (User requested to sync .env)
+# .env
+# .env.local
+# .env.development.local
+# .env.test.local
+# .env.production.local
+# *.env
 
 # Python (common in hackathons)
 __pycache__/
@@ -57,3 +59,15 @@ Desktop.ini
 
 *.py
 ~$Załącznik nr 2 Przykładowa tabela stosowana w procesie planowania budżetu.xlsx
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Temporary Scripts & Artifacts
+reproduce_crash.js
+verify_user_payload.js
+propozycja_json_excel.json
+*.mermaid
+*.png

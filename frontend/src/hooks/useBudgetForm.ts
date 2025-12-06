@@ -5,7 +5,6 @@ import {
     getExpenditureGroup,
     extractTaskBudgetShort,
     calculateGap,
-    isDotationParagraph,
     isValidTaskBudgetFormat
 } from '../utils/calculations';
 
@@ -126,14 +125,14 @@ export function useBudgetForm(initialData?: WierszBudzetowy) {
         }
 
         // Walidacja dotacji
-        if (isDotationParagraph(formData.paragraf)) {
-            if (!formData.beneficjentDotacji) {
-                newErrors.push({ field: 'beneficjentDotacji', message: 'Beneficjent dotacji jest wymagany dla paragrafów dotacyjnych', type: 'error' });
-            }
-            if (!formData.podstawaPrawnaDotacji) {
-                newErrors.push({ field: 'podstawaPrawnaDotacji', message: 'Podstawa prawna dotacji jest wymagana', type: 'error' });
-            }
-        }
+        // if (isDotationParagraph(formData.paragraf)) {
+        //     if (!formData.beneficjentDotacji) {
+        //         newErrors.push({ field: 'beneficjentDotacji', message: 'Beneficjent dotacji jest wymagany dla paragrafów dotacyjnych', type: 'error' });
+        //     }
+        //     if (!formData.podstawaPrawnaDotacji) {
+        //         newErrors.push({ field: 'podstawaPrawnaDotacji', message: 'Podstawa prawna dotacji jest wymagana', type: 'error' });
+        //     }
+        // }
 
         // Walidacja danych finansowych
         const lata: KluczRoku[] = ['2026', '2027', '2028', '2029'];

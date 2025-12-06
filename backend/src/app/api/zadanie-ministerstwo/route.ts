@@ -43,12 +43,16 @@ export async function POST(request: NextRequest) {
             },
         });
 
+        // Parse amount
+        const kwota = parseFloat(data.wartosc);
+
         // Create ministry task with constraint
         const zadanieMinisterstwo = await prisma.zadanie_ministerstwo.create({
             data: {
                 ograniczenie_id: ograniczenie.id,
                 termin_do: terminDo,
                 rok_budzetu: rokBudzetu,
+                kwota: isNaN(kwota) ? null : kwota,
                 stan: 'nowe',
                 data_utworzenia: new Date(),
             },

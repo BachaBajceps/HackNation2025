@@ -2,6 +2,13 @@ import React, { useState } from 'react';
 import { FormField } from '../FormField';
 import { ComboBox } from '../ComboBox';
 import './MinistryTaskForm.css';
+import {
+    parts,
+    sections,
+    chapters,
+    paragraphs,
+    departments
+} from '../../data/dictionaries';
 
 // Opcje dla listy rozwijanej
 const categoryOptions = [
@@ -96,7 +103,7 @@ export const MinistryTaskForm: React.FC = () => {
         return errors.find(e => e.field === field)?.message;
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         const validationErrors = validate();
         setErrors(validationErrors);
@@ -106,9 +113,30 @@ export const MinistryTaskForm: React.FC = () => {
                 ...formData,
                 wartosc: parseFloat(formData.wartosc).toFixed(2)
             };
-            console.log('Ministry Task Form data:', submitData);
-            setShowSuccess(true);
-            setTimeout(() => setShowSuccess(false), 3000);
+
+            try {
+                const response = await fetch('http://localhost:3000/api/zadanie-ministerstwo', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(submitData),
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.success) {
+                    setShowSuccess(true);
+                    // Opcjonalnie wyczyść formularz po sukcesie
+                    // setFormData({ ... });
+                    setTimeout(() => setShowSuccess(false), 3000);
+                } else {
+                    alert('Błąd: ' + (result.error || 'Nieznany błąd'));
+                }
+            } catch (error) {
+                console.error('Error submitting form:', error);
+                alert('Wystąpił błąd komunikacji z serwerem.');
+            }
         }
     };
 
@@ -128,7 +156,30 @@ export const MinistryTaskForm: React.FC = () => {
     // Uzyskaj etykietę wybranej kategorii dla placeholdera
     const getKategoriaPlaceholder = (): string => {
         const selected = categoryOptions.find(opt => opt.code === formData.kategoria);
-        return selected ? `Wpisz ${selected.name.toLowerCase()}...` : 'Najpierw wybierz kategorię...';
+        return selected ? `Wybierz ${selected.name.toLowerCase()}...` : 'Najpierw wybierz kategorię...';
+    };
+
+    const getOptionsForCategory = () => {
+        const formatOptions = (items: { code: string; name: string }[]) =>
+            items.map(item => ({
+                code: item.code,
+                name: `${item.code} - ${item.name}`
+            }));
+
+        switch (formData.kategoria) {
+            case 'komorka':
+                return formatOptions(departments);
+            case 'dzial':
+                return formatOptions(sections);
+            case 'rozdzial':
+                return formatOptions(chapters);
+            case 'paragraf':
+                return formatOptions(paragraphs);
+            case 'czesc':
+                return formatOptions(parts);
+            default:
+                return [];
+        }
     };
 
     return (
@@ -182,7 +233,10 @@ export const MinistryTaskForm: React.FC = () => {
                     <ComboBox
                         label="Kategoria"
                         value={formData.kategoria}
-                        onChange={(val) => updateField('kategoria', val)}
+                        onChange={(val) => {
+                            updateField('kategoria', val);
+                            updateField('opisKategorii', ''); // Clear description when category changes
+                        }}
                         options={categoryOptions}
                         required
                         error={getError('kategoria')}
@@ -191,23 +245,16 @@ export const MinistryTaskForm: React.FC = () => {
                 </div>
 
                 <div className="ministry-task-form__grid ministry-task-form__grid--1">
-                    <FormField
+                    <ComboBox
                         label="Opis"
-                        htmlFor="opisKategorii"
+                        value={formData.opisKategorii}
+                        onChange={(val) => updateField('opisKategorii', val)}
+                        options={getOptionsForCategory()}
                         required
+                        disabled={!formData.kategoria}
                         error={getError('opisKategorii')}
-                        hint={formData.kategoria ? undefined : 'Najpierw wybierz kategorię'}
-                    >
-                        <input
-                            type="text"
-                            id="opisKategorii"
-                            value={formData.opisKategorii}
-                            onChange={(e) => updateField('opisKategorii', e.target.value)}
-                            placeholder={getKategoriaPlaceholder()}
-                            disabled={!formData.kategoria}
-                            className="ministry-task-form__input"
-                        />
-                    </FormField>
+                        placeholder={getKategoriaPlaceholder()}
+                    />
                 </div>
 
                 <div className="ministry-task-form__grid ministry-task-form__grid--1">

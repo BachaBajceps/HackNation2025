@@ -71,3 +71,4 @@ verify_user_payload.js
 propozycja_json_excel.json
 *.mermaid
 *.png
+backend/dev.db

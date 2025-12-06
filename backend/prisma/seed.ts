@@ -3,7 +3,7 @@ import { readFile } from 'fs/promises';
 import { join } from 'path';
 
 // Import dictionary data from frontend
-const frontendDataPath = join(process.cwd(), '..', 'frontend', 'src', 'data', 'generated');
+const frontendDataPath = join(process.cwd(), '..', 'frontend', 'src', 'data', 'dane_formularzy');
 
 interface DictionaryItem {
     code: string;
@@ -23,11 +23,11 @@ async function main() {
     console.log('🌱 Starting database seed...');
 
     // Load JSON data
-    const parts = JSON.parse(await readFile(join(frontendDataPath, 'parts.json'), 'utf-8')) as DictionaryItem[];
-    const sections = JSON.parse(await readFile(join(frontendDataPath, 'sections.json'), 'utf-8')) as DictionaryItem[];
-    const chapters = JSON.parse(await readFile(join(frontendDataPath, 'chapters.json'), 'utf-8')) as ChapterItem[];
-    const paragraphs = JSON.parse(await readFile(join(frontendDataPath, 'paragraphs.json'), 'utf-8')) as DictionaryItem[];
-    const taskBudgets = JSON.parse(await readFile(join(frontendDataPath, 'taskBudget.json'), 'utf-8')) as TaskBudgetItem[];
+    const parts = JSON.parse(await readFile(join(frontendDataPath, 'czesci.json'), 'utf-8')) as DictionaryItem[];
+    const sections = JSON.parse(await readFile(join(frontendDataPath, 'dzialy.json'), 'utf-8')) as DictionaryItem[];
+    const chapters = JSON.parse(await readFile(join(frontendDataPath, 'rozdzialy.json'), 'utf-8')) as ChapterItem[];
+    const paragraphs = JSON.parse(await readFile(join(frontendDataPath, 'paragrafy.json'), 'utf-8')) as DictionaryItem[];
+    const taskBudgets = JSON.parse(await readFile(join(frontendDataPath, 'zadania_budzetowe.json'), 'utf-8')) as TaskBudgetItem[];
 
     // Financing sources (hardcoded as in frontend dictionaries.ts)
     const financingSources: DictionaryItem[] = [

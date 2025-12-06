@@ -1,25 +1,24 @@
 import { ElementSlownika, ElementRozdzialu, ElementBudzetuZadaniowego, MapowanieGrupyWydatkow } from '../types/budget';
 
-import partsData from './generated/parts.json';
-import sectionsData from './generated/sections.json';
-import chaptersData from './generated/chapters.json';
-import paragraphsData from './generated/paragraphs.json';
-import taskBudgetData from './generated/taskBudget.json';
+import partsData from './dane_formularzy/czesci.json';
+import sectionsData from './dane_formularzy/dzialy.json';
+import chaptersData from './dane_formularzy/rozdzialy.json';
+import paragraphsData from './dane_formularzy/paragrafy.json';
+import taskBudgetData from './dane_formularzy/zadania_budzetowe.json';
+import departmentsData from './dane_formularzy/departamenty.json';
 
 // Części budżetowe
 export const parts: ElementSlownika[] = partsData as ElementSlownika[];
-
 // Działy
 export const sections: ElementSlownika[] = sectionsData as ElementSlownika[];
-
 // Rozdziały
 export const chapters: ElementRozdzialu[] = chaptersData as ElementRozdzialu[];
-
 // Paragrafy
 export const paragraphs: ElementSlownika[] = paragraphsData as ElementSlownika[];
-
-// Budżet Zadaniowy
+// Zadania budżetowe
 export const taskBudgets: ElementBudzetuZadaniowego[] = taskBudgetData as unknown as ElementBudzetuZadaniowego[];
+// Departamenty
+export const departments: ElementSlownika[] = departmentsData as ElementSlownika[];
 
 // Źródła finansowania
 export const financingSources: ElementSlownika[] = [

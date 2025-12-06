@@ -7,7 +7,8 @@ import {
     sections,
     paragraphs,
     financingSources,
-    taskBudgets
+    taskBudgets,
+    departments
 } from '../../data/dictionaries';
 import { isDotationParagraph } from '../../utils/calculations';
 import './BudgetForm.css';
@@ -201,18 +202,13 @@ export const BudgetForm: React.FC = () => {
                         />
                     </FormField>
 
-                    <FormField
+                    <ComboBox
                         label="Nazwa komórki organizacyjnej"
-                        htmlFor="orgUnit"
-                    >
-                        <input
-                            type="text"
-                            id="orgUnit"
-                            value={formData.komorkaOrganizacyjna}
-                            onChange={(e) => updateField('komorkaOrganizacyjna', e.target.value)}
-                            placeholder="Wpisz komórkę..."
-                        />
-                    </FormField>
+                        value={formData.komorkaOrganizacyjna}
+                        onChange={(val) => updateField('komorkaOrganizacyjna', val)}
+                        options={formatOptions(departments)}
+                        placeholder="Wybierz departament..."
+                    />
 
                     <FormField
                         label="Dysponent środków"
@@ -334,7 +330,6 @@ export const BudgetForm: React.FC = () => {
                         <FormField
                             label="W przypadku dotacji - z kim zawarta umowa"
                             htmlFor="grantRecipient"
-                            required
                             error={getError('beneficjentDotacji')}
                         >
                             <input
@@ -349,7 +344,6 @@ export const BudgetForm: React.FC = () => {
                         <FormField
                             label="Podstawa prawna udzielenia dotacji"
                             htmlFor="grantLegalBasis"
-                            required
                             error={getError('podstawaPrawnaDotacji')}
                         >
                             <input

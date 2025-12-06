@@ -148,6 +148,7 @@ model zadanie_ministerstwo {
   formularz_id    Int?
   ograniczenie_id Int?
   termin_do       DateTime?
+  rok_budzetu     Int?
   stan            String?
   data_utworzenia DateTime?
   ograniczenie    ograniczenie? @relation(fields: [ograniczenie_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
@@ -176,18 +177,4 @@ model zrodlo_finansowania {
   nazwa           String?
   pozycja_budzetu pozycja_budzetu[]
 }
-
-model limit_wydatkow {
-  id               Int      @id @default(autoincrement())
-  rok_budzetowy    Int
-  kod_departamentu String
-  dzial_kod        String
-  rozdzial_kod     String
-  grupa_wydatkow   String
-  kwota            Float
-
-  @@unique([rok_budzetowy, kod_departamentu, dzial_kod, rozdzial_kod, grupa_wydatkow], map: "unique_limit_rok")
-  @@index([kod_departamentu], map: "idx_limit_dept")
-}
-
 

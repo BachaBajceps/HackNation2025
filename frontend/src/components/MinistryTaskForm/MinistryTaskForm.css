@@ -71,8 +71,20 @@
     grid-template-columns: repeat(2, 1fr);
 }
 
+.ministry-task-form__grid--3 {
+    grid-template-columns: repeat(3, 1fr);
+}
+
+@media (max-width: 900px) {
+    .ministry-task-form__grid--3 {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
 @media (max-width: 768px) {
-    .ministry-task-form__grid--2 {
+
+    .ministry-task-form__grid--2,
+    .ministry-task-form__grid--3 {
         grid-template-columns: 1fr;
     }
 

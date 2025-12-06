@@ -14,6 +14,7 @@ const categoryOptions = [
 
 interface MinistryTaskFormData {
     terminWykonania: string;
+    rokBudzetu: string;
     kategoria: string;
     opisKategorii: string;
     wartosc: string;
@@ -23,6 +24,7 @@ export const MinistryTaskForm: React.FC = () => {
     const [showSuccess, setShowSuccess] = useState(false);
     const [formData, setFormData] = useState<MinistryTaskFormData>({
         terminWykonania: '',
+        rokBudzetu: '',
         kategoria: '',
         opisKategorii: '',
         wartosc: ''
@@ -62,6 +64,15 @@ export const MinistryTaskForm: React.FC = () => {
 
         if (!formData.terminWykonania) {
             newErrors.push({ field: 'terminWykonania', message: 'Termin wykonania jest wymagany' });
+        }
+
+        if (!formData.rokBudzetu) {
+            newErrors.push({ field: 'rokBudzetu', message: 'Rok budżetu jest wymagany' });
+        } else {
+            const rok = parseInt(formData.rokBudzetu);
+            if (isNaN(rok) || rok < 2020 || rok > 2100) {
+                newErrors.push({ field: 'rokBudzetu', message: 'Rok musi być między 2020 a 2100' });
+            }
         }
 
         if (!formData.kategoria) {
@@ -105,6 +116,7 @@ export const MinistryTaskForm: React.FC = () => {
         if (confirm('Czy na pewno chcesz wyczyścić formularz?')) {
             setFormData({
                 terminWykonania: '',
+                rokBudzetu: '',
                 kategoria: '',
                 opisKategorii: '',
                 wartosc: ''
@@ -133,7 +145,7 @@ export const MinistryTaskForm: React.FC = () => {
                     Formularz zadania od ministerstwa
                 </h2>
 
-                <div className="ministry-task-form__grid ministry-task-form__grid--2">
+                <div className="ministry-task-form__grid ministry-task-form__grid--3">
                     <FormField
                         label="Termin wykonania"
                         htmlFor="terminWykonania"
@@ -145,6 +157,24 @@ export const MinistryTaskForm: React.FC = () => {
                             id="terminWykonania"
                             value={formData.terminWykonania}
                             onChange={(e) => updateField('terminWykonania', e.target.value)}
+                            className="ministry-task-form__input"
+                        />
+                    </FormField>
+
+                    <FormField
+                        label="Rok budżetu"
+                        htmlFor="rokBudzetu"
+                        required
+                        error={getError('rokBudzetu')}
+                    >
+                        <input
+                            type="number"
+                            id="rokBudzetu"
+                            value={formData.rokBudzetu}
+                            onChange={(e) => updateField('rokBudzetu', e.target.value)}
+                            placeholder="np. 2025"
+                            min="2020"
+                            max="2100"
                             className="ministry-task-form__input"
                         />
                     </FormField>

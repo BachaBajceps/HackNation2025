@@ -75,8 +75,6 @@ export const ComboBox: React.FC<ComboBoxProps> = ({
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setSearchTerm(e.target.value);
         setIsOpen(true);
-        // If user clears input, clear value? Or wait for selection? 
-        // Let's clear value if input is empty
         if (e.target.value === '') {
             onChange('');
         }

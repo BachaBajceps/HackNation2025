@@ -1,58 +1,58 @@
-// Types matching frontend BudgetRow structure
-// These will be used for API input/output
+// Typy pasujące do struktury frontendu (polskie nazwy)
+// Używane do komunikacji API
 
-export type YearKey = '2026' | '2027' | '2028' | '2029';
+export type KluczRoku = '2026' | '2027' | '2028' | '2029';
 
-export interface FinancialYearData {
-    year: number;
-    needs: number | null;           // potrzeby_finansowe
+export interface DaneFinansoweRoku {
+    rok: number;
+    potrzeby: number | null;        // potrzeby_finansowe
     limit: number | null;           // limit_wydatkow
-    gap: number;                    // kwota_niezabezpieczona (computed)
-    contractedAmount: number | null;// kwota_umowy
-    contractNumber: string;         // nr_umowy
+    roznica: number;                // kwota_niezabezpieczona (obliczane)
+    zaangazowanie: number | null;   // kwota_umowy
+    nrUmowy: string;                // nr_umowy
 }
 
-export interface BudgetRowInput {
+export interface WierszBudzetowyInput {
     id?: string;
 
     // Klasyfikacja budżetowa
-    part: string;                   // czesc_budzetowa.kod
-    section: string;                // dzial.kod
-    chapter: string;                // rozdzial.kod
-    paragraph: string;              // paragraf.kod
-    financingSource: string;        // zrodlo_finansowania.kod
-    expenditureGroup: string;       // grupa_wydatkow.nazwa
+    czesc: string;                  // czesc_budzetowa.kod
+    dzial: string;                  // dzial.kod
+    rozdzial: string;               // rozdzial.kod
+    paragraf: string;               // paragraf.kod
+    zrodloFinansowania: string;     // zrodlo_finansowania.kod
+    grupaWydatkow: string;          // grupa_wydatkow.nazwa
 
     // Budżet Zadaniowy
-    taskBudgetFull: string;         // budzet_zadaniowy_szczegolowy.kod
-    taskBudgetFunction: string;     // budzet_zadaniowy_skrocony.kod (auto from full)
+    budzetZadaniowyPelny: string;   // budzet_zadaniowy_szczegolowy.kod
+    funkcjaZadanie: string;         // budzet_zadaniowy_skrocony.kod
 
     // Dane organizacyjne i opisowe
-    projectName: string;            // pozycja_budzetu.nazwa_programu_projektu
-    orgUnit: string;                // pozycja_budzetu.nazwa_komorki_organizacyjnej
+    nazwaProjektu: string;          // pozycja_budzetu.nazwa_programu_projektu
+    komorkaOrganizacyjna: string;   // pozycja_budzetu.nazwa_komorki_organizacyjnej
     planWI: string;                 // pozycja_budzetu.plan_wi
-    disposer: string;               // pozycja_budzetu.dysponent_srodkow
-    budgetCode: string;             // pozycja_budzetu.budzet
-    taskName: string;               // opis_zadania.nazwa_zadania
-    justification: string;          // opis_zadania.uzasadnienie
-    category: string;               // opis_zadania.przeznaczenie_wydatkow
+    dysponent: string;              // pozycja_budzetu.dysponent_srodkow
+    kodBudzetu: string;             // pozycja_budzetu.budzet
+    nazwaZadania: string;           // opis_zadania.nazwa_zadania
+    uzasadnienie: string;           // opis_zadania.uzasadnienie
+    przeznaczenie: string;          // opis_zadania.przeznaczenie_wydatkow
 
     // Dane finansowe (na 4 lata)
-    financials: Record<YearKey, FinancialYearData>;
+    daneFinansowe: Record<KluczRoku, DaneFinansoweRoku>;
 
     // Dodatkowe informacje
-    grantRecipient: string;         // opis_zadania.dotacja_partner
-    grantLegalBasis: string;        // opis_zadania.dotacja_podstawa_prawna
-    comments: string;               // opis_zadania.uwagi
+    beneficjentDotacji: string;     // opis_zadania.dotacja_partner
+    podstawaPrawnaDotacji: string;  // opis_zadania.dotacja_podstawa_prawna
+    uwagi: string;                  // opis_zadania.uwagi
 }
 
-export interface BudgetRowResponse extends BudgetRowInput {
+export interface WierszBudzetowyResponse extends WierszBudzetowyInput {
     id: string;
-    createdAt?: string;
+    dataUtworzenia?: string;
 }
 
-export interface ApiResponse<T> {
-    success: boolean;
-    data?: T;
-    error?: string;
+export interface OdpowiedzAPI<T> {
+    sukces: boolean;
+    dane?: T;
+    blad?: string;
 }

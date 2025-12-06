@@ -1,31 +1,31 @@
 import prisma from '../prisma';
-import type { BudgetRowInput, BudgetRowResponse, YearKey } from '../types/budgetRow';
+import type { WierszBudzetowyInput, WierszBudzetowyResponse, KluczRoku } from '../types/budgetRow';
 
 // Helper: znajdź lub utwórz rekord słownikowy po kodzie
-async function findOrCreateDictionary<T extends { id: number }>(
+async function znajdzLubUtworzSlownik(
     model: 'czesc_budzetowa' | 'dzial' | 'rozdzial' | 'paragraf' | 'zrodlo_finansowania' | 'grupa_wydatkow',
     kod: string,
     extraData?: Record<string, unknown>
 ): Promise<number | null> {
     if (!kod || kod.trim() === '') return null;
 
-    const existing = await (prisma[model] as any).findFirst({
+    const istniejacy = await (prisma[model] as any).findFirst({
         where: model === 'grupa_wydatkow' ? { nazwa: kod } : { kod },
     });
 
-    if (existing) return existing.id;
+    if (istniejacy) return istniejacy.id;
 
     // Twórz nowy rekord jeśli nie istnieje
-    const createData = model === 'grupa_wydatkow'
+    const daneDoUtworzenia = model === 'grupa_wydatkow'
         ? { nazwa: kod }
         : { kod, ...extraData };
 
-    const created = await (prisma[model] as any).create({ data: createData });
-    return created.id;
+    const utworzony = await (prisma[model] as any).create({ data: daneDoUtworzenia });
+    return utworzony.id;
 }
 
 // Helper: znajdź budżet zadaniowy szczegółowy po kodzie
-async function findTaskBudgetDetailed(kod: string): Promise<{
+async function znajdzBudzetZadaniowy(kod: string): Promise<{
     szczegolowy_id: number | null;
     skrocony_id: number | null;
 } | null> {
@@ -59,60 +59,60 @@ async function findTaskBudgetDetailed(kod: string): Promise<{
 }
 
 // Zapisz dane finansowe dla jednego roku
-async function createFinancialData(financialYear: {
-    year: number;
-    needs: number | null;
+async function utworzDaneFinansowe(daneRoku: {
+    rok: number;
+    potrzeby: number | null;
     limit: number | null;
-    contractedAmount: number | null;
-    contractNumber: string;
+    zaangazowanie: number | null;
+    nrUmowy: string;
 }): Promise<number> {
-    const created = await prisma.dane_finansowe.create({
+    const utworzone = await prisma.dane_finansowe.create({
         data: {
-            rok: financialYear.year,
-            potrzeby_finansowe: financialYear.needs,
-            limit_wydatkow: financialYear.limit,
-            kwota_niezabezpieczona: (financialYear.needs || 0) - (financialYear.limit || 0),
-            kwota_umowy: financialYear.contractedAmount,
-            nr_umowy: financialYear.contractNumber || null,
+            rok: daneRoku.rok,
+            potrzeby_finansowe: daneRoku.potrzeby,
+            limit_wydatkow: daneRoku.limit,
+            kwota_niezabezpieczona: (daneRoku.potrzeby || 0) - (daneRoku.limit || 0),
+            kwota_umowy: daneRoku.zaangazowanie,
+            nr_umowy: daneRoku.nrUmowy || null,
         },
     });
-    return created.id;
+    return utworzone.id;
 }
 
-// Główna funkcja: zapisz BudgetRow do bazy
-export async function saveBudgetRow(input: BudgetRowInput): Promise<BudgetRowResponse> {
-    return await prisma.$transaction(async (tx) => {
+// Główna funkcja: zapisz wiersz budżetowy do bazy
+export async function zapiszWierszBudzetowy(dane: WierszBudzetowyInput): Promise<WierszBudzetowyResponse> {
+    return await prisma.$transaction(async () => {
         // 1. Znajdź lub utwórz rekordy słownikowe
-        const czescId = await findOrCreateDictionary('czesc_budzetowa', input.part);
-        const dzialId = await findOrCreateDictionary('dzial', input.section);
-        const rozdzialId = await findOrCreateDictionary('rozdzial', input.chapter, { dzial_id: dzialId });
-        const paragrafId = await findOrCreateDictionary('paragraf', input.paragraph);
-        const zrodloId = await findOrCreateDictionary('zrodlo_finansowania', input.financingSource);
-        const grupaId = await findOrCreateDictionary('grupa_wydatkow', input.expenditureGroup);
+        const czescId = await znajdzLubUtworzSlownik('czesc_budzetowa', dane.czesc);
+        const dzialId = await znajdzLubUtworzSlownik('dzial', dane.dzial);
+        const rozdzialId = await znajdzLubUtworzSlownik('rozdzial', dane.rozdzial, { dzial_id: dzialId });
+        const paragrafId = await znajdzLubUtworzSlownik('paragraf', dane.paragraf);
+        const zrodloId = await znajdzLubUtworzSlownik('zrodlo_finansowania', dane.zrodloFinansowania);
+        const grupaId = await znajdzLubUtworzSlownik('grupa_wydatkow', dane.grupaWydatkow);
 
         // 2. Znajdź budżet zadaniowy
-        const taskBudget = await findTaskBudgetDetailed(input.taskBudgetFull);
+        const budzetZadaniowy = await znajdzBudzetZadaniowy(dane.budzetZadaniowyPelny);
 
         // 3. Utwórz opis_zadania
         const opisZadania = await prisma.opis_zadania.create({
             data: {
-                nazwa_zadania: input.taskName,
-                uzasadnienie: input.justification || null,
-                przeznaczenie_wydatkow: input.category || null,
-                dotacja_partner: input.grantRecipient || null,
-                dotacja_podstawa_prawna: input.grantLegalBasis || null,
-                uwagi: input.comments || null,
+                nazwa_zadania: dane.nazwaZadania,
+                uzasadnienie: dane.uzasadnienie || null,
+                przeznaczenie_wydatkow: dane.przeznaczenie || null,
+                dotacja_partner: dane.beneficjentDotacji || null,
+                dotacja_podstawa_prawna: dane.podstawaPrawnaDotacji || null,
+                uwagi: dane.uwagi || null,
             },
         });
 
         // 4. Utwórz dane_finansowe dla każdego roku i zadanie_szczegoly
-        const years: YearKey[] = ['2026', '2027', '2028', '2029'];
+        const lata: KluczRoku[] = ['2026', '2027', '2028', '2029'];
         let zadanieSzczegolyId: number | null = null;
 
-        for (const yearKey of years) {
-            const financialData = input.financials[yearKey];
-            if (financialData) {
-                const daneFinansoweId = await createFinancialData(financialData);
+        for (const kluczRoku of lata) {
+            const daneFinansowe = dane.daneFinansowe[kluczRoku];
+            if (daneFinansowe) {
+                const daneFinansoweId = await utworzDaneFinansowe(daneFinansowe);
 
                 // Utwórz zadanie_szczegoly łączące opis z danymi finansowymi
                 const zadanieSzczegoly = await prisma.zadanie_szczegoly.create({
@@ -142,13 +142,13 @@ export async function saveBudgetRow(input: BudgetRowInput): Promise<BudgetRowRes
                 paragraf_id: paragrafId,
                 zrodlo_finansowania_id: zrodloId,
                 grupa_wydatkow_id: grupaId,
-                budzet_zadaniowy_szczegolowy_id: taskBudget?.szczegolowy_id || null,
-                budzet_zadaniowy_skrocony_id: taskBudget?.skrocony_id || null,
-                nazwa_programu_projektu: input.projectName || null,
-                nazwa_komorki_organizacyjnej: input.orgUnit || null,
-                plan_wi: input.planWI || null,
-                dysponent_srodkow: input.disposer || null,
-                budzet: input.budgetCode || null,
+                budzet_zadaniowy_szczegolowy_id: budzetZadaniowy?.szczegolowy_id || null,
+                budzet_zadaniowy_skrocony_id: budzetZadaniowy?.skrocony_id || null,
+                nazwa_programu_projektu: dane.nazwaProjektu || null,
+                nazwa_komorki_organizacyjnej: dane.komorkaOrganizacyjna || null,
+                plan_wi: dane.planWI || null,
+                dysponent_srodkow: dane.dysponent || null,
+                budzet: dane.kodBudzetu || null,
                 zadanie_szczegoly_id: zadanieSzczegolyId,
             },
         });
@@ -164,15 +164,15 @@ export async function saveBudgetRow(input: BudgetRowInput): Promise<BudgetRowRes
 
         // Zwróć odpowiedź w formacie frontend
         return {
-            ...input,
+            ...dane,
             id: formularz.id.toString(),
-            createdAt: new Date().toISOString(),
+            dataUtworzenia: new Date().toISOString(),
         };
     });
 }
 
-// Pobierz wszystkie pozycje budżetu
-export async function getAllBudgetRows(): Promise<BudgetRowResponse[]> {
+// Pobierz wszystkie wiersze budżetowe
+export async function pobierzWszystkieWiersze(): Promise<WierszBudzetowyResponse[]> {
     const formularze = await prisma.formularz.findMany({
         include: {
             pozycja_budzetu: {
@@ -205,68 +205,68 @@ export async function getAllBudgetRows(): Promise<BudgetRowResponse[]> {
         const opis = zs?.opis_zadania;
 
         // Zbierz dane finansowe
-        const financials: Record<YearKey, any> = {
-            '2026': createEmptyFinancialYear(2026),
-            '2027': createEmptyFinancialYear(2027),
-            '2028': createEmptyFinancialYear(2028),
-            '2029': createEmptyFinancialYear(2029),
+        const daneFinansowe: Record<KluczRoku, any> = {
+            '2026': utworzPusteDaneRoku(2026),
+            '2027': utworzPusteDaneRoku(2027),
+            '2028': utworzPusteDaneRoku(2028),
+            '2029': utworzPusteDaneRoku(2029),
         };
 
         if (zs?.dane_finansowe) {
             const df = zs.dane_finansowe;
-            const yearKey = df.rok.toString() as YearKey;
-            if (financials[yearKey]) {
-                financials[yearKey] = {
-                    year: df.rok,
-                    needs: df.potrzeby_finansowe,
+            const kluczRoku = df.rok.toString() as KluczRoku;
+            if (daneFinansowe[kluczRoku]) {
+                daneFinansowe[kluczRoku] = {
+                    rok: df.rok,
+                    potrzeby: df.potrzeby_finansowe,
                     limit: df.limit_wydatkow,
-                    gap: df.kwota_niezabezpieczona || 0,
-                    contractedAmount: df.kwota_umowy,
-                    contractNumber: df.nr_umowy || '',
+                    roznica: df.kwota_niezabezpieczona || 0,
+                    zaangazowanie: df.kwota_umowy,
+                    nrUmowy: df.nr_umowy || '',
                 };
             }
         }
 
         return {
             id: f.id.toString(),
-            part: p.czesc_budzetowa?.kod || '',
-            section: p.dzial?.kod || '',
-            chapter: p.rozdzial?.kod || '',
-            paragraph: p.paragraf?.kod || '',
-            financingSource: p.zrodlo_finansowania?.kod || '',
-            expenditureGroup: p.grupa_wydatkow?.nazwa || '',
-            taskBudgetFull: p.budzet_zadaniowy_szczegolowy?.kod || p.budzet_zadaniowy_skrocony?.kod || '',
-            taskBudgetFunction: p.budzet_zadaniowy_skrocony?.kod || '',
-            projectName: p.nazwa_programu_projektu || '',
-            orgUnit: p.nazwa_komorki_organizacyjnej || '',
+            czesc: p.czesc_budzetowa?.kod || '',
+            dzial: p.dzial?.kod || '',
+            rozdzial: p.rozdzial?.kod || '',
+            paragraf: p.paragraf?.kod || '',
+            zrodloFinansowania: p.zrodlo_finansowania?.kod || '',
+            grupaWydatkow: p.grupa_wydatkow?.nazwa || '',
+            budzetZadaniowyPelny: p.budzet_zadaniowy_szczegolowy?.kod || p.budzet_zadaniowy_skrocony?.kod || '',
+            funkcjaZadanie: p.budzet_zadaniowy_skrocony?.kod || '',
+            nazwaProjektu: p.nazwa_programu_projektu || '',
+            komorkaOrganizacyjna: p.nazwa_komorki_organizacyjnej || '',
             planWI: p.plan_wi || '',
-            disposer: p.dysponent_srodkow || '',
-            budgetCode: p.budzet || '',
-            taskName: opis?.nazwa_zadania || '',
-            justification: opis?.uzasadnienie || '',
-            category: opis?.przeznaczenie_wydatkow || '',
-            financials,
-            grantRecipient: opis?.dotacja_partner || '',
-            grantLegalBasis: opis?.dotacja_podstawa_prawna || '',
-            comments: opis?.uwagi || '',
-            createdAt: f.data_utworzenia?.toISOString(),
+            dysponent: p.dysponent_srodkow || '',
+            kodBudzetu: p.budzet || '',
+            nazwaZadania: opis?.nazwa_zadania || '',
+            uzasadnienie: opis?.uzasadnienie || '',
+            przeznaczenie: opis?.przeznaczenie_wydatkow || '',
+            daneFinansowe,
+            beneficjentDotacji: opis?.dotacja_partner || '',
+            podstawaPrawnaDotacji: opis?.dotacja_podstawa_prawna || '',
+            uwagi: opis?.uwagi || '',
+            dataUtworzenia: f.data_utworzenia?.toISOString(),
         };
     });
 }
 
-function createEmptyFinancialYear(year: number) {
+function utworzPusteDaneRoku(rok: number) {
     return {
-        year,
-        needs: null,
+        rok,
+        potrzeby: null,
         limit: null,
-        gap: 0,
-        contractedAmount: null,
-        contractNumber: '',
+        roznica: 0,
+        zaangazowanie: null,
+        nrUmowy: '',
     };
 }
 
-// Pobierz pojedynczą pozycję po ID
-export async function getBudgetRowById(id: number): Promise<BudgetRowResponse | null> {
-    const rows = await getAllBudgetRows();
-    return rows.find((r) => r.id === id.toString()) || null;
+// Pobierz pojedynczy wiersz po ID
+export async function pobierzWierszPoId(id: number): Promise<WierszBudzetowyResponse | null> {
+    const wiersze = await pobierzWszystkieWiersze();
+    return wiersze.find((w) => w.id === id.toString()) || null;
 }

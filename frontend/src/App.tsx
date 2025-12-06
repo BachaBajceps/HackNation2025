@@ -1,46 +1,33 @@
-import { useState } from 'react';
-import { BudgetForm } from './components/BudgetForm';
-import { MinistryTaskForm } from './components/MinistryTaskForm';
+
+import React from 'react';
+import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
+import { BudgetForm } from './components/BudgetForm/BudgetForm';
+import { DashboardBBF } from './pages/DashboardBBF';
+import { LimitsManager } from './pages/LimitsManager';
 import './App.css';
 
-type FormType = 'budget' | 'ministry';
-
 function App() {
-    const [activeForm, setActiveForm] = useState<FormType>('budget');
-
     return (
-        <div className="app">
-            <header className="app__header">
-                <div className="app__header-content">
-                    <h1 className="app__title">
-                        <span className="app__logo">📊</span>
-                        System Formularzy
-                    </h1>
-                    <p className="app__subtitle">Wybierz typ formularza z listy poniżej</p>
-                </div>
-                <div className="app__form-selector">
-                    <label htmlFor="formType" className="app__form-selector-label">Typ formularza:</label>
-                    <select
-                        id="formType"
-                        value={activeForm}
-                        onChange={(e) => setActiveForm(e.target.value as FormType)}
-                        className="app__form-selector-select"
-                    >
-                        <option value="budget">Formularz Budżetowy</option>
-                        <option value="ministry">Formularz Zadania od Ministerstwa</option>
-                    </select>
-                </div>
-            </header>
+        <BrowserRouter>
+            <div className="app-container">
+                <header style={{ padding: '1rem', borderBottom: '1px solid #ccc', marginBottom: '1rem' }}>
+                    <h1 style={{ margin: 0 }}>System Planowania Budżetu</h1>
+                    <nav style={{ marginTop: '0.5rem' }}>
+                        <Link to="/" style={{ marginRight: '1rem' }}>Formularz</Link>
+                        <Link to="/bbf">Panel BBF</Link>
+                        <Link to="/bbf/limits" style={{ marginLeft: '1rem' }}>Zarządzaj Limitami</Link> {/* Added link for LimitsManager */}
+                    </nav>
+                </header>
 
-            <main className="app__main">
-                {activeForm === 'budget' && <BudgetForm />}
-                {activeForm === 'ministry' && <MinistryTaskForm />}
-            </main>
-
-            <footer className="app__footer">
-                <p>© 2024 System Budżetowy • Wersja testowa</p>
-            </footer>
-        </div>
+                <main>
+                    <Routes>
+                        <Route path="/" element={<BudgetForm />} />
+                        <Route path="/bbf" element={<DashboardBBF />} />
+                        <Route path="/bbf/limits" element={<LimitsManager />} />
+                    </Routes>
+                </main>
+            </div>
+        </BrowserRouter>
     );
 }
 

@@ -169,9 +169,25 @@ model zadanie_szczegoly {
   @@index([opis_zadania_id], map: "idx_zadanie_szcz_opis")
 }
 
+
 model zrodlo_finansowania {
   id              Int               @id @default(autoincrement())
   kod             String            @unique(map: "sqlite_autoindex_zrodlo_finansowania_1")
   nazwa           String?
   pozycja_budzetu pozycja_budzetu[]
 }
+
+model limit_wydatkow {
+  id               Int      @id @default(autoincrement())
+  rok_budzetowy    Int
+  kod_departamentu String
+  dzial_kod        String
+  rozdzial_kod     String
+  grupa_wydatkow   String
+  kwota            Float
+
+  @@unique([rok_budzetowy, kod_departamentu, dzial_kod, rozdzial_kod, grupa_wydatkow], map: "unique_limit_rok")
+  @@index([kod_departamentu], map: "idx_limit_dept")
+}
+
+

@@ -1,4 +1,4 @@
-import { DictionaryItem, ChapterItem, TaskBudgetItem, ExpenditureGroupMapping } from '../types/budget';
+import { ElementSlownika, ElementRozdzialu, ElementBudzetuZadaniowego, MapowanieGrupyWydatkow } from '../types/budget';
 
 import partsData from './generated/parts.json';
 import sectionsData from './generated/sections.json';
@@ -7,22 +7,22 @@ import paragraphsData from './generated/paragraphs.json';
 import taskBudgetData from './generated/taskBudget.json';
 
 // Części budżetowe
-export const parts: DictionaryItem[] = partsData as DictionaryItem[];
+export const parts: ElementSlownika[] = partsData as ElementSlownika[];
 
 // Działy
-export const sections: DictionaryItem[] = sectionsData as DictionaryItem[];
+export const sections: ElementSlownika[] = sectionsData as ElementSlownika[];
 
 // Rozdziały
-export const chapters: ChapterItem[] = chaptersData as ChapterItem[];
+export const chapters: ElementRozdzialu[] = chaptersData as ElementRozdzialu[];
 
 // Paragrafy
-export const paragraphs: DictionaryItem[] = paragraphsData as DictionaryItem[];
+export const paragraphs: ElementSlownika[] = paragraphsData as ElementSlownika[];
 
 // Budżet Zadaniowy
-export const taskBudgets: TaskBudgetItem[] = taskBudgetData as unknown as TaskBudgetItem[];
+export const taskBudgets: ElementBudzetuZadaniowego[] = taskBudgetData as unknown as ElementBudzetuZadaniowego[];
 
 // Źródła finansowania
-export const financingSources: DictionaryItem[] = [
+export const financingSources: ElementSlownika[] = [
     { code: '0', name: 'Budżet państwa' },
     { code: '1', name: 'Środki z Unii Europejskiej (EFRR)' },
     { code: '2', name: 'Środki z Unii Europejskiej (EFS)' },
@@ -36,16 +36,16 @@ export const financingSources: DictionaryItem[] = [
 ];
 
 // Mapowanie paragrafów na grupy wydatków
-export const expenditureGroupMappings: ExpenditureGroupMapping[] = [
-    { paragraphRangeStart: 200, paragraphRangeEnd: 299, group: 'Dotacje i subwencje' },
-    { paragraphRangeStart: 300, paragraphRangeEnd: 399, group: 'Świadczenia na rzecz osób fizycznych' },
-    { paragraphRangeStart: 400, paragraphRangeEnd: 498, group: 'Wydatki bieżące' },
-    { paragraphRangeStart: 500, paragraphRangeEnd: 599, group: 'Rozliczenia' },
-    { paragraphRangeStart: 600, paragraphRangeEnd: 699, group: 'Wydatki majątkowe' },
+export const expenditureGroupMappings: MapowanieGrupyWydatkow[] = [
+    { poczatekZakresu: 200, koniecZakresu: 299, grupa: 'Dotacje i subwencje' },
+    { poczatekZakresu: 300, koniecZakresu: 399, grupa: 'Świadczenia na rzecz osób fizycznych' },
+    { poczatekZakresu: 400, koniecZakresu: 498, grupa: 'Wydatki bieżące' },
+    { poczatekZakresu: 500, koniecZakresu: 599, grupa: 'Rozliczenia' },
+    { poczatekZakresu: 600, koniecZakresu: 699, grupa: 'Wydatki majątkowe' },
 ];
 
 // Kategorie / Obszary działalności
-export const categories: DictionaryItem[] = [
+export const categories: ElementSlownika[] = [
     { code: 'cyberbezpieczenstwo', name: 'Cyberbezpieczeństwo' },
     { code: 'sztuczna-inteligencja', name: 'Sztuczna inteligencja' },
     { code: 'koszty-funkcjonowania', name: 'Koszty funkcjonowania' },
@@ -53,7 +53,7 @@ export const categories: DictionaryItem[] = [
 ];
 
 // Komórki organizacyjne (słownik wewnętrzny)
-export const orgUnits: DictionaryItem[] = [
+export const orgUnits: ElementSlownika[] = [
     { code: 'DA', name: 'Departament Administracji' },
     { code: 'DI', name: 'Departament Informatyzacji' },
     { code: 'DF', name: 'Departament Finansów' },
@@ -66,7 +66,7 @@ export const orgUnits: DictionaryItem[] = [
 ];
 
 // Dysponenci
-export const disposers: DictionaryItem[] = [
+export const disposers: ElementSlownika[] = [
     { code: 'KPRM', name: 'Kancelaria Prezesa Rady Ministrów' },
     { code: 'MC', name: 'Ministerstwo Cyfryzacji' },
     { code: 'MF', name: 'Ministerstwo Finansów' },

@@ -1,5 +1,5 @@
 import { expenditureGroupMappings } from '../data/dictionaries';
-import { FinancialYearData } from '../types/budget';
+import { DaneFinansoweRoku } from '../types/budget';
 
 /**
  * Wyznacza grupę wydatków na podstawie paragrafu
@@ -13,10 +13,10 @@ export function getExpenditureGroup(paragraph: string): string {
     }
 
     const mapping = expenditureGroupMappings.find(
-        m => paragraphNum >= m.paragraphRangeStart && paragraphNum <= m.paragraphRangeEnd
+        m => paragraphNum >= m.poczatekZakresu && paragraphNum <= m.koniecZakresu
     );
 
-    return mapping?.group || 'Nieznana grupa';
+    return mapping?.grupa || 'Nieznana grupa';
 }
 
 /**
@@ -85,15 +85,15 @@ export function parseCurrency(value: string): number | null {
  * Aktualizuje dane finansowe roku z przeliczeniem gap
  */
 export function updateFinancialYearData(
-    data: FinancialYearData,
-    field: keyof FinancialYearData,
+    data: DaneFinansoweRoku,
+    field: keyof DaneFinansoweRoku,
     value: number | null | string
-): FinancialYearData {
+): DaneFinansoweRoku {
     const updated = { ...data, [field]: value };
 
     // Przelicz gap gdy zmienia się needs lub limit
-    if (field === 'needs' || field === 'limit') {
-        updated.gap = calculateGap(updated.needs, updated.limit);
+    if (field === 'potrzeby' || field === 'limit') {
+        updated.roznica = calculateGap(updated.potrzeby, updated.limit);
     }
 
     return updated;
@@ -110,6 +110,7 @@ export function generateId(): string {
  * Waliduje format budżetu zadaniowego (XX.XX.XX.XX)
  */
 export function isValidTaskBudgetFormat(value: string): boolean {
-    const pattern = /^\d{2}\.\d{2}\.\d{2}\.\d{2}$/;
+    // Akceptuj format: cyfry.cyfry.cyfry.cyfry (np. 18.1.1.1 lub 01.02.03.04)
+    const pattern = /^\d+\.\d+\.\d+\.\d+$/;
     return pattern.test(value);
 }

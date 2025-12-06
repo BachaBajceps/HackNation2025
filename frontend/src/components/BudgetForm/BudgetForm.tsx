@@ -11,6 +11,7 @@ import {
 } from '../../data/dictionaries';
 import { isDotationParagraph } from '../../utils/calculations';
 import './BudgetForm.css';
+import { saveBudgetRow } from '../../services/api';
 
 import { ComboBox } from '../ComboBox';
 
@@ -43,15 +44,25 @@ export const BudgetForm: React.FC = () => {
     // Filtruj budżety zadaniowe - wszystkie poziomy
     const fullTaskBudgets = taskBudgets;
 
-    const handleSubmit = (e: React.FormEvent) => {
-        // ... (remains same)
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         const validationErrors = validate();
 
         if (validationErrors.filter(err => err.type === 'error').length === 0) {
-            setShowSuccess(true);
-            console.log('Form data:', formData);
-            setTimeout(() => setShowSuccess(false), 3000);
+            // Call backend API
+            const result = await saveBudgetRow(formData);
+
+            if (result.success) {
+                setShowSuccess(true);
+                console.log('Zapisano z ID:', result.id);
+                setTimeout(() => {
+                    setShowSuccess(false);
+                    reset(); // Reset form after successful save
+                }, 3000);
+            } else {
+                // Show error message to user
+                alert(`Błąd zapisu: ${result.error}\n${result.details || ''}`);
+            }
         }
     };
 

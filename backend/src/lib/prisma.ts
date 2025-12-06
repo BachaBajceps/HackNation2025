@@ -1,9 +1,5 @@
 import { PrismaClient } from '@prisma/client';
 import { PrismaBetterSqlite3 } from '@prisma/adapter-better-sqlite3';
-import path from 'path';
-
-// Path to the database file
-const dbPath = path.resolve(process.cwd(), '..', 'budget_planning.db');
 
 declare global {
     // eslint-disable-next-line no-var
@@ -11,7 +7,13 @@ declare global {
 }
 
 const prismaClientSingleton = () => {
-    const adapter = new PrismaBetterSqlite3({ url: dbPath });
+    // Use DATABASE_URL or default to dev.db
+    const dbUrl = process.env.DATABASE_URL || 'file:./dev.db';
+
+    // Create adapter with url config
+    const adapter = new PrismaBetterSqlite3({ url: dbUrl });
+
+    // Return PrismaClient with adapter
     return new PrismaClient({ adapter });
 };
 

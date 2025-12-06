@@ -96,24 +96,42 @@ export const MinistryTaskForm: React.FC = () => {
         return errors.find(e => e.field === field)?.message;
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         const validationErrors = validate();
         setErrors(validationErrors);
 
         if (validationErrors.length === 0) {
-            const submitData = {
-                ...formData,
-                wartosc: parseFloat(formData.wartosc).toFixed(2)
-            };
-            console.log('Ministry Task Form data:', submitData);
-            setShowSuccess(true);
-            setTimeout(() => setShowSuccess(false), 3000);
+            try {
+                const response = await fetch('/api/zadanie-ministerstwo', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        ...formData,
+                        wartosc: parseFloat(formData.wartosc).toFixed(2)
+                    }),
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.success) {
+                    setShowSuccess(true);
+                    console.log('Ministry task saved with ID:', result.id);
+                    setTimeout(() => {
+                        setShowSuccess(false);
+                        handleReset(true);
+                    }, 3000);
+                } else {
+                    alert(`Błąd zapisu: ${result.error}\n${result.details || ''}`);
+                }
+            } catch (error) {
+                alert(`Błąd połączenia: ${error instanceof Error ? error.message : 'Nieznany błąd'}`);
+            }
         }
     };
 
-    const handleReset = () => {
-        if (confirm('Czy na pewno chcesz wyczyścić formularz?')) {
+    const handleReset = (skipConfirm = false) => {
+        if (skipConfirm || confirm('Czy na pewno chcesz wyczyścić formularz?')) {
             setFormData({
                 terminWykonania: '',
                 rokBudzetu: '',
@@ -249,7 +267,7 @@ export const MinistryTaskForm: React.FC = () => {
 
             {/* Przyciski */}
             <div className="ministry-task-form__actions">
-                <button type="button" className="ministry-task-form__btn ministry-task-form__btn--secondary" onClick={handleReset}>
+                <button type="button" className="ministry-task-form__btn ministry-task-form__btn--secondary" onClick={() => handleReset()}>
                     Wyczyść formularz
                 </button>
                 <button type="submit" className="ministry-task-form__btn ministry-task-form__btn--primary">

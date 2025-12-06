@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
-import { BudgetRow, createEmptyBudgetRow, YearKey, ValidationError } from '../types/budget';
+import { WierszBudzetowy, utworzPustyWiersz, KluczRoku, ValidationError } from '../types/budget';
 import { chapters } from '../data/dictionaries';
 import {
     getExpenditureGroup,
@@ -9,22 +9,22 @@ import {
     isValidTaskBudgetFormat
 } from '../utils/calculations';
 
-export function useBudgetForm(initialData?: BudgetRow) {
-    const [formData, setFormData] = useState<BudgetRow>(
-        initialData ?? createEmptyBudgetRow()
+export function useBudgetForm(initialData?: WierszBudzetowy) {
+    const [formData, setFormData] = useState<WierszBudzetowy>(
+        initialData ?? utworzPustyWiersz()
     );
     const [errors, setErrors] = useState<ValidationError[]>([]);
     const [isDirty, setIsDirty] = useState(false);
 
     // Filtrowane rozdziały na podstawie wybranego działu
-    const filteredChapters = chapters.filter(
-        ch => ch.parentSection === formData.section
+    const filtrowaneRozdzialy = chapters.filter(
+        ch => ch.parentSection === formData.dzial
     );
 
     // Aktualizacja pola formularza
-    const updateField = useCallback(<K extends keyof BudgetRow>(
+    const updateField = useCallback(<K extends keyof WierszBudzetowy>(
         field: K,
-        value: BudgetRow[K]
+        value: WierszBudzetowy[K]
     ) => {
         setFormData(prev => ({ ...prev, [field]: value }));
         setIsDirty(true);
@@ -32,23 +32,23 @@ export function useBudgetForm(initialData?: BudgetRow) {
 
     // Aktualizacja danych finansowych dla konkretnego roku
     const updateFinancial = useCallback((
-        year: YearKey,
-        field: keyof BudgetRow['financials'][YearKey],
+        rok: KluczRoku,
+        field: keyof WierszBudzetowy['daneFinansowe'][KluczRoku],
         value: number | null | string
     ) => {
         setFormData(prev => {
-            const yearData = { ...prev.financials[year], [field]: value };
+            const daneRoku = { ...prev.daneFinansowe[rok], [field]: value };
 
-            // Przelicz gap
-            if (field === 'needs' || field === 'limit') {
-                yearData.gap = calculateGap(yearData.needs, yearData.limit);
+            // Przelicz gap (różnicę)
+            if (field === 'potrzeby' || field === 'limit') {
+                daneRoku.roznica = calculateGap(daneRoku.potrzeby, daneRoku.limit);
             }
 
             return {
                 ...prev,
-                financials: {
-                    ...prev.financials,
-                    [year]: yearData
+                daneFinansowe: {
+                    ...prev.daneFinansowe,
+                    [rok]: daneRoku
                 }
             };
         });
@@ -57,39 +57,39 @@ export function useBudgetForm(initialData?: BudgetRow) {
 
     // Automatyczna aktualizacja grupy wydatków przy zmianie paragrafu
     useEffect(() => {
-        if (formData.paragraph) {
-            const group = getExpenditureGroup(formData.paragraph);
-            if (group !== formData.expenditureGroup) {
-                setFormData(prev => ({ ...prev, expenditureGroup: group }));
+        if (formData.paragraf) {
+            const grupa = getExpenditureGroup(formData.paragraf);
+            if (grupa !== formData.grupaWydatkow) {
+                setFormData(prev => ({ ...prev, grupaWydatkow: grupa }));
             }
         }
-    }, [formData.paragraph, formData.expenditureGroup]);
+    }, [formData.paragraf, formData.grupaWydatkow]);
 
     // Automatyczna aktualizacja skrótu budżetu zadaniowego
     useEffect(() => {
-        if (formData.taskBudgetFull) {
-            const short = extractTaskBudgetShort(formData.taskBudgetFull);
-            if (short !== formData.taskBudgetFunction) {
-                setFormData(prev => ({ ...prev, taskBudgetFunction: short }));
+        if (formData.budzetZadaniowyPelny) {
+            const skrot = extractTaskBudgetShort(formData.budzetZadaniowyPelny);
+            if (skrot !== formData.funkcjaZadanie) {
+                setFormData(prev => ({ ...prev, funkcjaZadanie: skrot }));
             }
         }
-    }, [formData.taskBudgetFull, formData.taskBudgetFunction]);
+    }, [formData.budzetZadaniowyPelny, formData.funkcjaZadanie]);
 
     // Automatyczne ustawienie "nie dotyczy" dla nazwy projektu gdy źródło = 0
     useEffect(() => {
-        if (formData.financingSource === '0') {
-            if (formData.projectName !== 'nie dotyczy') {
-                setFormData(prev => ({ ...prev, projectName: 'nie dotyczy' }));
+        if (formData.zrodloFinansowania === '0') {
+            if (formData.nazwaProjektu !== 'nie dotyczy') {
+                setFormData(prev => ({ ...prev, nazwaProjektu: 'nie dotyczy' }));
             }
         }
-    }, [formData.financingSource, formData.projectName]);
+    }, [formData.zrodloFinansowania, formData.nazwaProjektu]);
 
     // Czyszczenie rozdziału gdy zmienia się dział
-    const handleSectionChange = useCallback((newSection: string) => {
+    const handleSectionChange = useCallback((nowyDzial: string) => {
         setFormData(prev => ({
             ...prev,
-            section: newSection,
-            chapter: '' // Reset chapter when section changes
+            dzial: nowyDzial,
+            rozdzial: '' // Reset chapter when section changes
         }));
         setIsDirty(true);
     }, []);
@@ -99,61 +99,61 @@ export function useBudgetForm(initialData?: BudgetRow) {
         const newErrors: ValidationError[] = [];
 
         // Wymagane pola
-        if (!formData.part) {
-            newErrors.push({ field: 'part', message: 'Część budżetowa jest wymagana', type: 'error' });
+        if (!formData.czesc) {
+            newErrors.push({ field: 'czesc', message: 'Część budżetowa jest wymagana', type: 'error' });
         }
-        if (!formData.section) {
-            newErrors.push({ field: 'section', message: 'Dział jest wymagany', type: 'error' });
+        if (!formData.dzial) {
+            newErrors.push({ field: 'dzial', message: 'Dział jest wymagany', type: 'error' });
         }
-        if (!formData.chapter) {
-            newErrors.push({ field: 'chapter', message: 'Rozdział jest wymagany', type: 'error' });
+        if (!formData.rozdzial) {
+            newErrors.push({ field: 'rozdzial', message: 'Rozdział jest wymagany', type: 'error' });
         }
-        if (!formData.paragraph) {
-            newErrors.push({ field: 'paragraph', message: 'Paragraf jest wymagany', type: 'error' });
+        if (!formData.paragraf) {
+            newErrors.push({ field: 'paragraf', message: 'Paragraf jest wymagany', type: 'error' });
         }
-        if (!formData.financingSource) {
-            newErrors.push({ field: 'financingSource', message: 'Źródło finansowania jest wymagane', type: 'error' });
+        if (!formData.zrodloFinansowania) {
+            newErrors.push({ field: 'zrodloFinansowania', message: 'Źródło finansowania jest wymagane', type: 'error' });
         }
-        if (!formData.taskBudgetFull) {
-            newErrors.push({ field: 'taskBudgetFull', message: 'Budżet zadaniowy jest wymagany', type: 'error' });
-        } else if (!isValidTaskBudgetFormat(formData.taskBudgetFull)) {
-            newErrors.push({ field: 'taskBudgetFull', message: 'Nieprawidłowy format (wymagany: XX.XX.XX.XX)', type: 'error' });
+        if (!formData.budzetZadaniowyPelny) {
+            newErrors.push({ field: 'budzetZadaniowyPelny', message: 'Budżet zadaniowy jest wymagany', type: 'error' });
+        } else if (!isValidTaskBudgetFormat(formData.budzetZadaniowyPelny)) {
+            newErrors.push({ field: 'budzetZadaniowyPelny', message: 'Nieprawidłowy format (wymagany: X.X.X.X)', type: 'error' });
         }
 
         // Nazwa projektu wymagana gdy źródło != 0
-        if (formData.financingSource !== '0' && formData.financingSource && !formData.projectName) {
-            newErrors.push({ field: 'projectName', message: 'Nazwa programu/projektu jest wymagana dla tego źródła finansowania', type: 'error' });
+        if (formData.zrodloFinansowania !== '0' && formData.zrodloFinansowania && !formData.nazwaProjektu) {
+            newErrors.push({ field: 'nazwaProjektu', message: 'Nazwa programu/projektu jest wymagana dla tego źródła finansowania', type: 'error' });
         }
 
         // Walidacja dotacji
-        if (isDotationParagraph(formData.paragraph)) {
-            if (!formData.grantRecipient) {
-                newErrors.push({ field: 'grantRecipient', message: 'Beneficjent dotacji jest wymagany dla paragrafów dotacyjnych', type: 'error' });
+        if (isDotationParagraph(formData.paragraf)) {
+            if (!formData.beneficjentDotacji) {
+                newErrors.push({ field: 'beneficjentDotacji', message: 'Beneficjent dotacji jest wymagany dla paragrafów dotacyjnych', type: 'error' });
             }
-            if (!formData.grantLegalBasis) {
-                newErrors.push({ field: 'grantLegalBasis', message: 'Podstawa prawna dotacji jest wymagana', type: 'error' });
+            if (!formData.podstawaPrawnaDotacji) {
+                newErrors.push({ field: 'podstawaPrawnaDotacji', message: 'Podstawa prawna dotacji jest wymagana', type: 'error' });
             }
         }
 
         // Walidacja danych finansowych
-        const years: YearKey[] = ['2026', '2027', '2028', '2029'];
-        years.forEach(year => {
-            const yearData = formData.financials[year];
+        const lata: KluczRoku[] = ['2026', '2027', '2028', '2029'];
+        lata.forEach(rok => {
+            const daneRoku = formData.daneFinansowe[rok];
 
             // Kwota umowy > 0 wymaga nr umowy
-            if (yearData.contractedAmount && yearData.contractedAmount > 0 && !yearData.contractNumber) {
+            if (daneRoku.zaangazowanie && daneRoku.zaangazowanie > 0 && !daneRoku.nrUmowy) {
                 newErrors.push({
-                    field: `financials.${year}.contractNumber`,
-                    message: `Nr umowy wymagany dla roku ${year} (kwota umowy > 0)`,
+                    field: `daneFinansowe.${rok}.nrUmowy`,
+                    message: `Nr umowy wymagany dla roku ${rok} (kwota umowy > 0)`,
                     type: 'error'
                 });
             }
 
             // Ostrzeżenie gdy kwota umowy > limit
-            if (yearData.contractedAmount && yearData.limit && yearData.contractedAmount > yearData.limit) {
+            if (daneRoku.zaangazowanie && daneRoku.limit && daneRoku.zaangazowanie > daneRoku.limit) {
                 newErrors.push({
-                    field: `financials.${year}.contractedAmount`,
-                    message: `Kwota umowy przekracza limit w roku ${year}`,
+                    field: `daneFinansowe.${rok}.zaangazowanie`,
+                    message: `Kwota umowy przekracza limit w roku ${rok}`,
                     type: 'warning'
                 });
             }
@@ -165,7 +165,7 @@ export function useBudgetForm(initialData?: BudgetRow) {
 
     // Reset formularza
     const reset = useCallback(() => {
-        setFormData(createEmptyBudgetRow());
+        setFormData(utworzPustyWiersz());
         setErrors([]);
         setIsDirty(false);
     }, []);
@@ -189,7 +189,7 @@ export function useBudgetForm(initialData?: BudgetRow) {
         formData,
         errors,
         isDirty,
-        filteredChapters,
+        filtrowaneRozdzialy,
         updateField,
         updateFinancial,
         handleSectionChange,

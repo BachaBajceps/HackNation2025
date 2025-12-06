@@ -21,19 +21,17 @@ export const BudgetForm: React.FC = () => {
     const {
         formData,
         errors,
-        filteredChapters,
+        filtrowaneRozdzialy,
         updateField,
         updateFinancial,
         handleSectionChange,
         validate,
         reset,
-        hasError,
         getError,
-        hasWarning,
     } = useBudgetForm();
 
-    const isProjectNameDisabled = formData.financingSource === '0';
-    const showDotationFields = isDotationParagraph(formData.paragraph);
+    const isProjectNameDisabled = formData.zrodloFinansowania === '0';
+    const showDotationFields = isDotationParagraph(formData.paragraf);
 
     // Helper to format options as "Code - Name"
     const formatOptions = (items: { code: string; name: string }[]) =>
@@ -81,53 +79,53 @@ export const BudgetForm: React.FC = () => {
                 <div className="budget-form__grid budget-form__grid--6">
                     <ComboBox
                         label="Część"
-                        value={formData.part}
-                        onChange={(val) => updateField('part', val)}
+                        value={formData.czesc}
+                        onChange={(val) => updateField('czesc', val)}
                         options={formatOptions(parts)}
                         required
-                        error={getError('part')}
+                        error={getError('czesc')}
                         placeholder="Wybierz..."
                     />
 
                     <ComboBox
                         label="Dział"
-                        value={formData.section}
+                        value={formData.dzial}
                         onChange={(val) => handleSectionChange(val)}
                         options={formatOptions(sections)}
                         required
-                        error={getError('section')}
+                        error={getError('dzial')}
                         placeholder="Wybierz..."
                     />
 
                     <ComboBox
                         label="Rozdział"
-                        value={formData.chapter}
-                        onChange={(val) => updateField('chapter', val)}
-                        options={formatOptions(filteredChapters)}
+                        value={formData.rozdzial}
+                        onChange={(val) => updateField('rozdzial', val)}
+                        options={formatOptions(filtrowaneRozdzialy)}
                         required
-                        error={getError('chapter')}
-                        disabled={!formData.section}
-                        placeholder={filteredChapters.length === 0 && formData.section ? 'Brak danych' : "Wybierz..."}
-                        warning={filteredChapters.length === 0 && formData.section ? 'Brak rozdziałów dla wybranego działu' : undefined}
+                        error={getError('rozdzial')}
+                        disabled={!formData.dzial}
+                        placeholder={filtrowaneRozdzialy.length === 0 && formData.dzial ? 'Brak danych' : "Wybierz..."}
+                        warning={filtrowaneRozdzialy.length === 0 && formData.dzial ? 'Brak rozdziałów dla wybranego działu' : undefined}
                     />
 
                     <ComboBox
                         label="Paragraf"
-                        value={formData.paragraph}
-                        onChange={(val) => updateField('paragraph', val)}
+                        value={formData.paragraf}
+                        onChange={(val) => updateField('paragraf', val)}
                         options={formatOptions(paragraphs)}
                         required
-                        error={getError('paragraph')}
+                        error={getError('paragraf')}
                         placeholder="Wybierz..."
                     />
 
                     <ComboBox
                         label="Źródło finansowania"
-                        value={formData.financingSource}
-                        onChange={(val) => updateField('financingSource', val)}
+                        value={formData.zrodloFinansowania}
+                        onChange={(val) => updateField('zrodloFinansowania', val)}
                         options={formatOptions(financingSources)}
                         required
-                        error={getError('financingSource')}
+                        error={getError('zrodloFinansowania')}
                         placeholder="Wybierz..."
                     />
                 </div>
@@ -143,12 +141,12 @@ export const BudgetForm: React.FC = () => {
                 <div className="budget-form__grid budget-form__grid--2">
                     <ComboBox
                         label="Funkcja / Zadanie / Podzadanie / Działanie"
-                        value={formData.taskBudgetFull}
-                        onChange={(val) => updateField('taskBudgetFull', val)}
+                        value={formData.budzetZadaniowyPelny}
+                        onChange={(val) => updateField('budzetZadaniowyPelny', val)}
                         options={formatOptions(fullTaskBudgets)}
                         required
-                        error={getError('taskBudgetFull')}
-                        placeholder="Wybierz zadanie (XX.XX.XX.XX)..."
+                        error={getError('budzetZadaniowyPelny')}
+                        placeholder="Wybierz zadanie (X.X.X.X)..."
                     />
 
                     <FormField
@@ -160,7 +158,7 @@ export const BudgetForm: React.FC = () => {
                         <input
                             type="text"
                             id="taskBudgetFunction"
-                            value={formData.taskBudgetFunction}
+                            value={formData.funkcjaZadanie}
                             readOnly
                         />
                     </FormField>
@@ -180,13 +178,13 @@ export const BudgetForm: React.FC = () => {
                         htmlFor="projectName"
                         required={!isProjectNameDisabled}
                         disabled={isProjectNameDisabled}
-                        error={getError('projectName')}
+                        error={getError('nazwaProjektu')}
                     >
                         <input
                             type="text"
                             id="projectName"
-                            value={formData.projectName}
-                            onChange={(e) => updateField('projectName', e.target.value)}
+                            value={formData.nazwaProjektu}
+                            onChange={(e) => updateField('nazwaProjektu', e.target.value)}
                             disabled={isProjectNameDisabled}
                             placeholder={isProjectNameDisabled ? 'nie dotyczy' : 'Nazwa programu...'}
                         />
@@ -199,8 +197,8 @@ export const BudgetForm: React.FC = () => {
                         <input
                             type="text"
                             id="orgUnit"
-                            value={formData.orgUnit}
-                            onChange={(e) => updateField('orgUnit', e.target.value)}
+                            value={formData.komorkaOrganizacyjna}
+                            onChange={(e) => updateField('komorkaOrganizacyjna', e.target.value)}
                             placeholder="Wpisz komórkę..."
                         />
                     </FormField>
@@ -212,8 +210,8 @@ export const BudgetForm: React.FC = () => {
                         <input
                             type="text"
                             id="disposer"
-                            value={formData.disposer}
-                            onChange={(e) => updateField('disposer', e.target.value)}
+                            value={formData.dysponent}
+                            onChange={(e) => updateField('dysponent', e.target.value)}
                             placeholder="Wpisz dysponenta..."
                         />
                     </FormField>
@@ -240,8 +238,8 @@ export const BudgetForm: React.FC = () => {
                         <input
                             type="text"
                             id="budgetCode"
-                            value={formData.budgetCode}
-                            onChange={(e) => updateField('budgetCode', e.target.value)}
+                            value={formData.kodBudzetu}
+                            onChange={(e) => updateField('kodBudzetu', e.target.value)}
                             placeholder="Kod budżetu..."
                         />
                     </FormField>
@@ -253,8 +251,8 @@ export const BudgetForm: React.FC = () => {
                         <input
                             type="text"
                             id="category"
-                            value={formData.category}
-                            onChange={(e) => updateField('category', e.target.value)}
+                            value={formData.przeznaczenie}
+                            onChange={(e) => updateField('przeznaczenie', e.target.value)}
                             placeholder="Wpisz przeznaczenie..."
                         />
                     </FormField>
@@ -276,8 +274,8 @@ export const BudgetForm: React.FC = () => {
                         <input
                             type="text"
                             id="taskName"
-                            value={formData.taskName}
-                            onChange={(e) => updateField('taskName', e.target.value)}
+                            value={formData.nazwaZadania}
+                            onChange={(e) => updateField('nazwaZadania', e.target.value)}
                             placeholder="Krótki, zwięzły tytuł zadania..."
                         />
                     </FormField>
@@ -290,8 +288,8 @@ export const BudgetForm: React.FC = () => {
                     >
                         <textarea
                             id="justification"
-                            value={formData.justification}
-                            onChange={(e) => updateField('justification', e.target.value)}
+                            value={formData.uzasadnienie}
+                            onChange={(e) => updateField('uzasadnienie', e.target.value)}
                             placeholder="Szczegółowy opis potrzeby biznesowej..."
                             rows={4}
                         />
@@ -307,7 +305,7 @@ export const BudgetForm: React.FC = () => {
                 </h2>
 
                 <FinancialYearGrid
-                    financials={formData.financials}
+                    daneFinansowe={formData.daneFinansowe}
                     onUpdate={updateFinancial}
                     errors={errors}
                 />
@@ -326,13 +324,13 @@ export const BudgetForm: React.FC = () => {
                             label="W przypadku dotacji - z kim zawarta umowa"
                             htmlFor="grantRecipient"
                             required
-                            error={getError('grantRecipient')}
+                            error={getError('beneficjentDotacji')}
                         >
                             <input
                                 type="text"
                                 id="grantRecipient"
-                                value={formData.grantRecipient}
-                                onChange={(e) => updateField('grantRecipient', e.target.value)}
+                                value={formData.beneficjentDotacji}
+                                onChange={(e) => updateField('beneficjentDotacji', e.target.value)}
                                 placeholder="Nazwa beneficjenta..."
                             />
                         </FormField>
@@ -341,13 +339,13 @@ export const BudgetForm: React.FC = () => {
                             label="Podstawa prawna udzielenia dotacji"
                             htmlFor="grantLegalBasis"
                             required
-                            error={getError('grantLegalBasis')}
+                            error={getError('podstawaPrawnaDotacji')}
                         >
                             <input
                                 type="text"
                                 id="grantLegalBasis"
-                                value={formData.grantLegalBasis}
-                                onChange={(e) => updateField('grantLegalBasis', e.target.value)}
+                                value={formData.podstawaPrawnaDotacji}
+                                onChange={(e) => updateField('podstawaPrawnaDotacji', e.target.value)}
                                 placeholder="Ustawa, rozporządzenie..."
                             />
                         </FormField>
@@ -369,8 +367,8 @@ export const BudgetForm: React.FC = () => {
                     >
                         <textarea
                             id="comments"
-                            value={formData.comments}
-                            onChange={(e) => updateField('comments', e.target.value)}
+                            value={formData.uwagi}
+                            onChange={(e) => updateField('uwagi', e.target.value)}
                             placeholder="Opcjonalne uwagi..."
                             rows={3}
                         />

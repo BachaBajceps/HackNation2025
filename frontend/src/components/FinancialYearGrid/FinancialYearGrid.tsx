@@ -1,56 +1,56 @@
 import React from 'react';
-import { YearKey, FinancialYearData } from '../../types/budget';
+import { KluczRoku, DaneFinansoweRoku } from '../../types/budget';
 import { formatCurrency } from '../../utils/calculations';
 import './FinancialYearGrid.css';
 
 interface FinancialYearGridProps {
-    financials: Record<YearKey, FinancialYearData>;
-    onUpdate: (year: YearKey, field: keyof FinancialYearData, value: number | null | string) => void;
+    daneFinansowe: Record<KluczRoku, DaneFinansoweRoku>;
+    onUpdate: (rok: KluczRoku, pole: keyof DaneFinansoweRoku, wartosc: number | null | string) => void;
     errors: { field: string; message: string; type: 'error' | 'warning' }[];
 }
 
-const YEARS: YearKey[] = ['2026', '2027', '2028', '2029'];
+const LATA: KluczRoku[] = ['2026', '2027', '2028', '2029'];
 
 export const FinancialYearGrid: React.FC<FinancialYearGridProps> = ({
-    financials,
+    daneFinansowe,
     onUpdate,
     errors
 }) => {
     const handleNumberChange = (
-        year: YearKey,
-        field: keyof FinancialYearData,
+        rok: KluczRoku,
+        pole: keyof DaneFinansoweRoku,
         e: React.ChangeEvent<HTMLInputElement>
     ) => {
         const value = e.target.value;
         if (value === '') {
-            onUpdate(year, field, null);
+            onUpdate(rok, pole, null);
         } else {
             const num = parseFloat(value.replace(/,/g, '.'));
             if (!isNaN(num)) {
-                onUpdate(year, field, num);
+                onUpdate(rok, pole, num);
             }
         }
     };
 
     const handleTextChange = (
-        year: YearKey,
-        field: keyof FinancialYearData,
+        rok: KluczRoku,
+        pole: keyof DaneFinansoweRoku,
         e: React.ChangeEvent<HTMLInputElement>
     ) => {
-        onUpdate(year, field, e.target.value);
+        onUpdate(rok, pole, e.target.value);
     };
 
-    const getFieldError = (year: YearKey, field: string): string | undefined => {
-        const error = errors.find(e => e.field === `financials.${year}.${field}`);
+    const getFieldError = (rok: KluczRoku, pole: string): string | undefined => {
+        const error = errors.find(e => e.field === `daneFinansowe.${rok}.${pole}`);
         return error?.message;
     };
 
-    const hasFieldWarning = (year: YearKey, field: string): boolean => {
-        return errors.some(e => e.field === `financials.${year}.${field}` && e.type === 'warning');
+    const hasFieldWarning = (rok: KluczRoku, pole: string): boolean => {
+        return errors.some(e => e.field === `daneFinansowe.${rok}.${pole}` && e.type === 'warning');
     };
 
-    const hasFieldError = (year: YearKey, field: string): boolean => {
-        return errors.some(e => e.field === `financials.${year}.${field}` && e.type === 'error');
+    const hasFieldError = (rok: KluczRoku, pole: string): boolean => {
+        return errors.some(e => e.field === `daneFinansowe.${rok}.${pole}` && e.type === 'error');
     };
 
     return (
@@ -59,9 +59,9 @@ export const FinancialYearGrid: React.FC<FinancialYearGridProps> = ({
                 <div className="financial-grid__header-cell financial-grid__header-cell--label">
                     Dane finansowe
                 </div>
-                {YEARS.map(year => (
-                    <div key={year} className="financial-grid__header-cell financial-grid__header-cell--year">
-                        <span className="financial-grid__year-label">Rok {year}</span>
+                {LATA.map(rok => (
+                    <div key={rok} className="financial-grid__header-cell financial-grid__header-cell--year">
+                        <span className="financial-grid__year-label">Rok {rok}</span>
                     </div>
                 ))}
             </div>
@@ -73,15 +73,15 @@ export const FinancialYearGrid: React.FC<FinancialYearGridProps> = ({
                         Potrzeby
                         <span className="financial-grid__required">*</span>
                     </div>
-                    {YEARS.map(year => (
-                        <div key={year} className="financial-grid__cell">
+                    {LATA.map(rok => (
+                        <div key={rok} className="financial-grid__cell">
                             <input
                                 type="text"
                                 inputMode="decimal"
                                 className="financial-grid__input"
                                 placeholder="0,00"
-                                value={financials[year].needs ?? ''}
-                                onChange={(e) => handleNumberChange(year, 'needs', e)}
+                                value={daneFinansowe[rok].potrzeby ?? ''}
+                                onChange={(e) => handleNumberChange(rok, 'potrzeby', e)}
                             />
                         </div>
                     ))}
@@ -92,15 +92,15 @@ export const FinancialYearGrid: React.FC<FinancialYearGridProps> = ({
                     <div className="financial-grid__cell financial-grid__cell--label">
                         Plan
                     </div>
-                    {YEARS.map(year => (
-                        <div key={year} className="financial-grid__cell">
+                    {LATA.map(rok => (
+                        <div key={rok} className="financial-grid__cell">
                             <input
                                 type="text"
                                 inputMode="decimal"
                                 className="financial-grid__input"
                                 placeholder="0,00"
-                                value={financials[year].limit ?? ''}
-                                onChange={(e) => handleNumberChange(year, 'limit', e)}
+                                value={daneFinansowe[rok].limit ?? ''}
+                                onChange={(e) => handleNumberChange(rok, 'limit', e)}
                             />
                         </div>
                     ))}
@@ -112,14 +112,14 @@ export const FinancialYearGrid: React.FC<FinancialYearGridProps> = ({
                         Różnica
                         <span className="financial-grid__hint">(automatyczne)</span>
                     </div>
-                    {YEARS.map(year => {
-                        const gap = financials[year].gap;
-                        const isNegative = gap < 0;
-                        const isPositive = gap > 0;
+                    {LATA.map(rok => {
+                        const roznica = daneFinansowe[rok].roznica;
+                        const isNegative = roznica < 0;
+                        const isPositive = roznica > 0;
                         return (
-                            <div key={year} className="financial-grid__cell">
+                            <div key={rok} className="financial-grid__cell">
                                 <span className={`financial-grid__calculated ${isPositive ? 'financial-grid__calculated--negative' : ''} ${isNegative ? 'financial-grid__calculated--positive' : ''}`}>
-                                    {formatCurrency(gap)}
+                                    {formatCurrency(roznica)}
                                 </span>
                             </div>
                         );
@@ -131,20 +131,20 @@ export const FinancialYearGrid: React.FC<FinancialYearGridProps> = ({
                     <div className="financial-grid__cell financial-grid__cell--label">
                         Kwota zawartych umów
                     </div>
-                    {YEARS.map(year => (
+                    {LATA.map(rok => (
                         <div
-                            key={year}
-                            className={`financial-grid__cell ${hasFieldWarning(year, 'contractedAmount') ? 'financial-grid__cell--warning' : ''}`}
+                            key={rok}
+                            className={`financial-grid__cell ${hasFieldWarning(rok, 'zaangazowanie') ? 'financial-grid__cell--warning' : ''}`}
                         >
                             <input
                                 type="text"
                                 inputMode="decimal"
                                 className="financial-grid__input"
                                 placeholder="0,00"
-                                value={financials[year].contractedAmount ?? ''}
-                                onChange={(e) => handleNumberChange(year, 'contractedAmount', e)}
+                                value={daneFinansowe[rok].zaangazowanie ?? ''}
+                                onChange={(e) => handleNumberChange(rok, 'zaangazowanie', e)}
                             />
-                            {hasFieldWarning(year, 'contractedAmount') && (
+                            {hasFieldWarning(rok, 'zaangazowanie') && (
                                 <span className="financial-grid__warning-icon" title="Przekracza limit">⚠</span>
                             )}
                         </div>
@@ -156,20 +156,20 @@ export const FinancialYearGrid: React.FC<FinancialYearGridProps> = ({
                     <div className="financial-grid__cell financial-grid__cell--label">
                         Nr umowy/nr wniosku o udzielenie zamówienia publicznego
                     </div>
-                    {YEARS.map(year => (
+                    {LATA.map(rok => (
                         <div
-                            key={year}
-                            className={`financial-grid__cell ${hasFieldError(year, 'contractNumber') ? 'financial-grid__cell--error' : ''}`}
+                            key={rok}
+                            className={`financial-grid__cell ${hasFieldError(rok, 'nrUmowy') ? 'financial-grid__cell--error' : ''}`}
                         >
                             <input
                                 type="text"
                                 className="financial-grid__input financial-grid__input--text"
                                 placeholder="Nr umowy"
-                                value={financials[year].contractNumber}
-                                onChange={(e) => handleTextChange(year, 'contractNumber', e)}
+                                value={daneFinansowe[rok].nrUmowy}
+                                onChange={(e) => handleTextChange(rok, 'nrUmowy', e)}
                             />
-                            {getFieldError(year, 'contractNumber') && (
-                                <span className="financial-grid__error-text">{getFieldError(year, 'contractNumber')}</span>
+                            {getFieldError(rok, 'nrUmowy') && (
+                                <span className="financial-grid__error-text">{getFieldError(rok, 'nrUmowy')}</span>
                             )}
                         </div>
                     ))}

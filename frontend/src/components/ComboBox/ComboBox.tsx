@@ -110,7 +110,7 @@ export const ComboBox: React.FC<ComboBoxProps> = ({
             {isOpen && !disabled && (
                 <ul className="combobox-options">
                     {filteredOptions.length > 0 ? (
-                        filteredOptions.slice(0, 50).map((option) => (
+                        filteredOptions.map((option) => (
                             <li
                                 key={option.code}
                                 className={`combobox-option ${option.code === value ? 'selected' : ''}`}

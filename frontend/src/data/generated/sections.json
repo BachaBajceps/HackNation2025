@@ -1,0 +1,134 @@
+[
+  {
+    "code": "010",
+    "name": "Rolnictwo i łowiectwo"
+  },
+  {
+    "code": "020",
+    "name": "Leśnictwo"
+  },
+  {
+    "code": "050",
+    "name": "Rybołówstwo i rybactwo"
+  },
+  {
+    "code": "100",
+    "name": "Górnictwo i kopalnictwo"
+  },
+  {
+    "code": "150",
+    "name": "Przetwórstwo przemysłowe"
+  },
+  {
+    "code": "400",
+    "name": "Wytwarzanie i zaopatrywanie w energię elektryczną, gaz i wodę"
+  },
+  {
+    "code": "500",
+    "name": "Handel"
+  },
+  {
+    "code": "550",
+    "name": "Hotele i restauracje"
+  },
+  {
+    "code": "600",
+    "name": "Transport i łączność"
+  },
+  {
+    "code": "630",
+    "name": "Turystyka"
+  },
+  {
+    "code": "700",
+    "name": "Gospodarka mieszkaniowa"
+  },
+  {
+    "code": "710",
+    "name": "Działalność usługowa"
+  },
+  {
+    "code": "720",
+    "name": "Informatyka"
+  },
+  {
+    "code": "730",
+    "name": "Szkolnictwo wyższe i nauka"
+  },
+  {
+    "code": "750",
+    "name": "Administracja publiczna"
+  },
+  {
+    "code": "751",
+    "name": "Urzędy naczelnych organów władzy państwowej, kontroli i ochrony prawa oraz sądownictwa"
+  },
+  {
+    "code": "752",
+    "name": "Obrona narodowa"
+  },
+  {
+    "code": "753",
+    "name": "Obowiązkowe ubezpieczenia społeczne"
+  },
+  {
+    "code": "754",
+    "name": "Bezpieczeństwo publiczne i ochrona przeciwpożarowa"
+  },
+  {
+    "code": "755",
+    "name": "Wymiar sprawiedliwości"
+  },
+  {
+    "code": "756",
+    "name": "Dochody od osób prawnych od osób fizycznych i od innych jednostek nieposiadających osobowości prawnej oraz wydatki związane z ich poborem"
+  },
+  {
+    "code": "757",
+    "name": "Obsługa długu publicznego"
+  },
+  {
+    "code": "758",
+    "name": "Różne rozliczenia"
+  },
+  {
+    "code": "801",
+    "name": "Oświata i wychowanie"
+  },
+  {
+    "code": "851",
+    "name": "Ochrona zdrowia"
+  },
+  {
+    "code": "852",
+    "name": "Pomoc społeczna"
+  },
+  {
+    "code": "853",
+    "name": "Pozostałe zadania w zakresie polityki społecznej"
+  },
+  {
+    "code": "854",
+    "name": "Edukacyjna opieka wychowawcza"
+  },
+  {
+    "code": "855",
+    "name": "Rodzina"
+  },
+  {
+    "code": "900",
+    "name": "Gospodarka komunalna i ochrona środowiska"
+  },
+  {
+    "code": "921",
+    "name": "Kultura i ochrona dziedzictwa narodowego"
+  },
+  {
+    "code": "925",
+    "name": "Ogrody botaniczne i zoologiczne oraz naturalne obszary i obiekty chronionej przyrody"
+  },
+  {
+    "code": "926",
+    "name": "Kultura fizyczna"
+  }
+]

@@ -1,0 +1,374 @@
+[
+  {
+    "code": "01",
+    "name": "Kancelaria Prezydenta RP"
+  },
+  {
+    "code": "02",
+    "name": "Kancelaria Sejmu"
+  },
+  {
+    "code": "03",
+    "name": "Kancelaria Senatu"
+  },
+  {
+    "code": "04",
+    "name": "Sąd Najwyższy"
+  },
+  {
+    "code": "05",
+    "name": "Naczelny Sąd Administracyjny"
+  },
+  {
+    "code": "06",
+    "name": "Trybunał Konstytucyjny"
+  },
+  {
+    "code": "07",
+    "name": "Najwyższa Izba Kontroli"
+  },
+  {
+    "code": "08",
+    "name": "Rzecznik Praw Obywatelskich"
+  },
+  {
+    "code": "09",
+    "name": "Krajowa Rada Radiofonii i Telewizji"
+  },
+  {
+    "code": "10",
+    "name": "Urząd Ochrony Danych Osobowych"
+  },
+  {
+    "code": "11",
+    "name": "Krajowe Biuro Wyborcze"
+  },
+  {
+    "code": "12",
+    "name": "Państwowa Inspekcja Pracy"
+  },
+  {
+    "code": "13",
+    "name": "Instytut Pamięci Narodowej - Komisja Ścigania Zbrodni przeciwko Narodowi Polskiemu"
+  },
+  {
+    "code": "14",
+    "name": "Rzecznik Praw Dziecka"
+  },
+  {
+    "code": "15",
+    "name": "Sądy powszechne"
+  },
+  {
+    "code": "16",
+    "name": "Kancelaria Prezesa Rady Ministrów"
+  },
+  {
+    "code": "17",
+    "name": "Administracja publiczna"
+  },
+  {
+    "code": "18",
+    "name": "Budownictwo, planowanie i zagospodarowanie przestrzenne oraz mieszkalnictwo"
+  },
+  {
+    "code": "19",
+    "name": "Budżet, finanse publiczne i instytucje finansowe"
+  },
+  {
+    "code": "20",
+    "name": "Gospodarka"
+  },
+  {
+    "code": "21",
+    "name": "Gospodarka morska"
+  },
+  {
+    "code": "22",
+    "name": "Gospodarka wodna"
+  },
+  {
+    "code": "23",
+    "name": "Członkostwo Rzeczypospolitej Polskiej w Unii Europejskiej"
+  },
+  {
+    "code": "24",
+    "name": "Kultura i ochrona dziedzictwa narodowego"
+  },
+  {
+    "code": "25",
+    "name": "Kultura fizyczna"
+  },
+  {
+    "code": "26",
+    "name": "Łączność"
+  },
+  {
+    "code": "27",
+    "name": "Informatyzacja"
+  },
+  {
+    "code": "28",
+    "name": "Szkolnictwo wyższe i nauka"
+  },
+  {
+    "code": "29",
+    "name": "Obrona narodowa"
+  },
+  {
+    "code": "30",
+    "name": "Oświata i wychowanie"
+  },
+  {
+    "code": "31",
+    "name": "Praca"
+  },
+  {
+    "code": "32",
+    "name": "Rolnictwo"
+  },
+  {
+    "code": "33",
+    "name": "Rozwój wsi"
+  },
+  {
+    "code": "34",
+    "name": "Rozwój regionalny"
+  },
+  {
+    "code": "35",
+    "name": "Rynki rolne"
+  },
+  {
+    "code": "36",
+    "name": "(uchylona)"
+  },
+  {
+    "code": "37",
+    "name": "Sprawiedliwość"
+  },
+  {
+    "code": "38",
+    "name": "(uchylona)"
+  },
+  {
+    "code": "39",
+    "name": "Transport"
+  },
+  {
+    "code": "40",
+    "name": "Turystyka"
+  },
+  {
+    "code": "41",
+    "name": "Środowisko"
+  },
+  {
+    "code": "42",
+    "name": "Sprawy wewnętrzne"
+  },
+  {
+    "code": "43",
+    "name": "Wyznania religijne oraz mniejszości narodowe i etniczne"
+  },
+  {
+    "code": "44",
+    "name": "Zabezpieczenie społeczne"
+  },
+  {
+    "code": "45",
+    "name": "Sprawy zagraniczne"
+  },
+  {
+    "code": "46",
+    "name": "Zdrowie"
+  },
+  {
+    "code": "47",
+    "name": "Energia"
+  },
+  {
+    "code": "48",
+    "name": "Gospodarka surowcami energetycznymi"
+  },
+  {
+    "code": "49",
+    "name": "Urząd Zamówień Publicznych"
+  },
+  {
+    "code": "50",
+    "name": "Urząd Regulacji Energetyki"
+  },
+  {
+    "code": "51",
+    "name": "Klimat"
+  },
+  {
+    "code": "52",
+    "name": "Krajowa Rada Sądownictwa"
+  },
+  {
+    "code": "53",
+    "name": "Urząd Ochrony Konkurencji i Konsumentów"
+  },
+  {
+    "code": "54",
+    "name": "Urząd do Spraw Kombatantów i Osób Represjonowanych"
+  },
+  {
+    "code": "55",
+    "name": "Aktywa państwowe"
+  },
+  {
+    "code": "56",
+    "name": "Centralne Biuro Antykorupcyjne"
+  },
+  {
+    "code": "57",
+    "name": "Agencja Bezpieczeństwa Wewnętrznego"
+  },
+  {
+    "code": "58",
+    "name": "Główny Urząd Statystyczny"
+  },
+  {
+    "code": "59",
+    "name": "Agencja Wywiadu"
+  },
+  {
+    "code": "60",
+    "name": "Wyższy Urząd Górniczy"
+  },
+  {
+    "code": "61",
+    "name": "Urząd Patentowy Rzeczypospolitej Polskiej"
+  },
+  {
+    "code": "62",
+    "name": "Rybołówstwo"
+  },
+  {
+    "code": "63",
+    "name": "Rodzina"
+  },
+  {
+    "code": "64",
+    "name": "Główny Urząd Miar"
+  },
+  {
+    "code": "65",
+    "name": "Polski Komitet Normalizacyjny"
+  },
+  {
+    "code": "66",
+    "name": "Rzecznik Praw Pacjenta"
+  },
+  {
+    "code": "67",
+    "name": "Polska Akademia Nauk"
+  },
+  {
+    "code": "68",
+    "name": "Państwowa Agencja Atomistyki"
+  },
+  {
+    "code": "69",
+    "name": "Żegluga śródlądowa"
+  },
+  {
+    "code": "70",
+    "name": "(uchylona)"
+  },
+  {
+    "code": "71",
+    "name": "Urząd Transportu Kolejowego"
+  },
+  {
+    "code": "72",
+    "name": "Kasa Rolniczego Ubezpieczenia Społecznego"
+  },
+  {
+    "code": "73",
+    "name": "Zakład Ubezpieczeń Społecznych"
+  },
+  {
+    "code": "74",
+    "name": "Prokuratoria Generalna Rzeczypospolitej Polskiej"
+  },
+  {
+    "code": "75",
+    "name": "Rządowe Centrum Legislacji"
+  },
+  {
+    "code": "76",
+    "name": "Urząd Komunikacji Elektronicznej"
+  },
+  {
+    "code": "77",
+    "name": "Podatki i inne wpłaty na rzecz budżetu państwa"
+  },
+  {
+    "code": "78",
+    "name": "(uchylona)"
+  },
+  {
+    "code": "79",
+    "name": "Obsługa długu Skarbu Państwa"
+  },
+  {
+    "code": "80",
+    "name": "Regionalne izby obrachunkowe"
+  },
+  {
+    "code": "81",
+    "name": "Rezerwa ogólna"
+  },
+  {
+    "code": "82",
+    "name": "Subwencje ogólne dla jednostek samorządu terytorialnego"
+  },
+  {
+    "code": "83",
+    "name": "Rezerwy celowe"
+  },
+  {
+    "code": "84",
+    "name": "Środki własne Unii Europejskiej"
+  },
+  {
+    "code": "85",
+    "name": "Województwa"
+  },
+  {
+    "code": "86",
+    "name": "Samorządowe Kolegia Odwoławcze"
+  },
+  {
+    "code": "87",
+    "name": "Dochody budżetu środków europejskich"
+  },
+  {
+    "code": "88",
+    "name": "Powszechne jednostki organizacyjne prokuratury"
+  },
+  {
+    "code": "89",
+    "name": "Państwowa Komisja do spraw przeciwdziałania wykorzystaniu seksualnemu małoletnich poniżej lat 15"
+  },
+  {
+    "code": "90",
+    "name": "Akademia Kopernikańska"
+  },
+  {
+    "code": "91",
+    "name": "Biuro Rady Fiskalnej"
+  },
+  {
+    "code": "97",
+    "name": "Przychody i rozchody związane z prefinansowaniem zadań realizowanych z udziałem środków pochodzących z budżetu Unii Europejskiej"
+  },
+  {
+    "code": "98",
+    "name": "Przychody i rozchody związane z finansowaniem potrzeb pożyczkowych budżetu państwa"
+  }
+]

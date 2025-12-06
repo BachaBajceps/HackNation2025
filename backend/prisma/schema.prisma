@@ -1,0 +1,177 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model budzet_zadaniowy_skrocony {
+  id                           Int                            @id @default(autoincrement())
+  kod                          String                         @unique(map: "sqlite_autoindex_budzet_zadaniowy_skrocony_1")
+  funkcja                      String
+  zadanie                      String
+  nazwa                        String?
+  budzet_zadaniowy_szczegolowy budzet_zadaniowy_szczegolowy[]
+  pozycja_budzetu              pozycja_budzetu[]
+}
+
+model budzet_zadaniowy_szczegolowy {
+  id                        Int                       @id @default(autoincrement())
+  kod                       String                    @unique(map: "sqlite_autoindex_budzet_zadaniowy_szczegolowy_1")
+  budzet_skrocony_id        Int
+  podzadanie                String?
+  dzialanie                 String?
+  nazwa                     String?
+  budzet_zadaniowy_skrocony budzet_zadaniowy_skrocony @relation(fields: [budzet_skrocony_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  pozycja_budzetu           pozycja_budzetu[]
+
+  @@index([budzet_skrocony_id], map: "idx_bz_szcz_skrocony")
+}
+
+model czesc_budzetowa {
+  id              Int               @id @default(autoincrement())
+  kod             String            @unique(map: "sqlite_autoindex_czesc_budzetowa_1")
+  nazwa           String?
+  pozycja_budzetu pozycja_budzetu[]
+}
+
+model dane_finansowe {
+  id                     Int                 @id @default(autoincrement())
+  rok                    Int
+  potrzeby_finansowe     Float?
+  limit_wydatkow         Float?
+  kwota_niezabezpieczona Float?
+  kwota_umowy            Float?
+  nr_umowy               String?
+  zadanie_szczegoly      zadanie_szczegoly[]
+}
+
+model dzial {
+  id              Int               @id @default(autoincrement())
+  kod             String            @unique(map: "sqlite_autoindex_dzial_1")
+  nazwa           String?
+  pozycja_budzetu pozycja_budzetu[]
+  rozdzial        rozdzial[]
+}
+
+model formularz {
+  id                   Int                    @id @default(autoincrement())
+  pozycja_budzetu_id   Int
+  data_utworzenia      DateTime?
+  data_przeslania      DateTime?
+  status               String?
+  pozycja_budzetu      pozycja_budzetu        @relation(fields: [pozycja_budzetu_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  zadanie_ministerstwo zadanie_ministerstwo[]
+
+  @@index([pozycja_budzetu_id], map: "idx_formularz_pozycja")
+}
+
+model grupa_wydatkow {
+  id              Int               @id @default(autoincrement())
+  nazwa           String            @unique(map: "sqlite_autoindex_grupa_wydatkow_1")
+  pozycja_budzetu pozycja_budzetu[]
+}
+
+model ograniczenie {
+  id                    Int                    @id @default(autoincrement())
+  komorka_organizacyjna String?
+  dzial                 String?
+  rozdzial              String?
+  paragraf              String?
+  czesc_budzetowa       String?
+  zadanie_ministerstwo  zadanie_ministerstwo[]
+}
+
+model opis_zadania {
+  id                      Int                 @id @default(autoincrement())
+  nazwa_zadania           String
+  uzasadnienie            String?
+  przeznaczenie_wydatkow  String?
+  dotacja_partner         String?
+  dotacja_podstawa_prawna String?
+  uwagi                   String?
+  zadanie_szczegoly       zadanie_szczegoly[]
+}
+
+model paragraf {
+  id              Int               @id @default(autoincrement())
+  kod             String            @unique(map: "sqlite_autoindex_paragraf_1")
+  nazwa           String?
+  pozycja_budzetu pozycja_budzetu[]
+}
+
+model pozycja_budzetu {
+  id                              Int                           @id @default(autoincrement())
+  zadanie_szczegoly_id            Int?
+  czesc_budzetowa_id              Int
+  dzial_id                        Int?
+  rozdzial_id                     Int?
+  paragraf_id                     Int?
+  zrodlo_finansowania_id          Int?
+  grupa_wydatkow_id               Int?
+  budzet_zadaniowy_szczegolowy_id Int?
+  budzet_zadaniowy_skrocony_id    Int?
+  nazwa_programu_projektu         String?
+  nazwa_komorki_organizacyjnej    String?
+  plan_wi                         String?
+  dysponent_srodkow               String?
+  budzet                          String?
+  formularz                       formularz[]
+  budzet_zadaniowy_skrocony       budzet_zadaniowy_skrocony?    @relation(fields: [budzet_zadaniowy_skrocony_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  budzet_zadaniowy_szczegolowy    budzet_zadaniowy_szczegolowy? @relation(fields: [budzet_zadaniowy_szczegolowy_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  grupa_wydatkow                  grupa_wydatkow?               @relation(fields: [grupa_wydatkow_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  zrodlo_finansowania             zrodlo_finansowania?          @relation(fields: [zrodlo_finansowania_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  paragraf                        paragraf?                     @relation(fields: [paragraf_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  rozdzial                        rozdzial?                     @relation(fields: [rozdzial_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  dzial                           dzial?                        @relation(fields: [dzial_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  czesc_budzetowa                 czesc_budzetowa               @relation(fields: [czesc_budzetowa_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  zadanie_szczegoly               zadanie_szczegoly?            @relation(fields: [zadanie_szczegoly_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([zadanie_szczegoly_id], map: "idx_pozycja_zadanie")
+  @@index([czesc_budzetowa_id], map: "idx_pozycja_czesc")
+}
+
+model rozdzial {
+  id              Int               @id @default(autoincrement())
+  kod             String            @unique(map: "sqlite_autoindex_rozdzial_1")
+  dzial_id        Int?
+  nazwa           String?
+  pozycja_budzetu pozycja_budzetu[]
+  dzial           dzial?            @relation(fields: [dzial_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([dzial_id], map: "idx_rozdzial_dzial")
+}
+
+model zadanie_ministerstwo {
+  id              Int           @id @default(autoincrement())
+  formularz_id    Int?
+  ograniczenie_id Int?
+  termin_do       DateTime?
+  stan            String?
+  data_utworzenia DateTime?
+  ograniczenie    ograniczenie? @relation(fields: [ograniczenie_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  formularz       formularz?    @relation(fields: [formularz_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([ograniczenie_id], map: "idx_zad_min_ograniczenie")
+  @@index([formularz_id], map: "idx_zad_min_formularz")
+}
+
+model zadanie_szczegoly {
+  id                Int               @id @default(autoincrement())
+  opis_zadania_id   Int?
+  dane_finansowe_id Int?
+  pozycja_budzetu   pozycja_budzetu[]
+  dane_finansowe    dane_finansowe?   @relation(fields: [dane_finansowe_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  opis_zadania      opis_zadania?     @relation(fields: [opis_zadania_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([dane_finansowe_id], map: "idx_zadanie_szcz_dane")
+  @@index([opis_zadania_id], map: "idx_zadanie_szcz_opis")
+}
+
+model zrodlo_finansowania {
+  id              Int               @id @default(autoincrement())
+  kod             String            @unique(map: "sqlite_autoindex_zrodlo_finansowania_1")
+  nazwa           String?
+  pozycja_budzetu pozycja_budzetu[]
+}

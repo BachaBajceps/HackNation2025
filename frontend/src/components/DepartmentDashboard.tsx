@@ -156,15 +156,42 @@ export const DepartmentDashboard: React.FC<DepartmentDashboardProps> = () => {
                 body: JSON.stringify({
                     akcja: 'wyslij_wszystkie',
                     zadanie_id: zadanieId,
-                    departament_id: departamentId
+                    departament_id: departamentId,
+                    komorka: departmentName
                 })
             });
             const result = await response.json();
             if (result.success) {
-                alert(`Wysłano ${result.data.zmienione} formularzy.`);
+                alert(`✅ Wysłano ${result.data.zmienione} formularzy.`);
                 fetchBudgetPositions(); // Odśwież listę
             } else {
-                alert('Błąd: ' + (result.error || 'Nieznany błąd'));
+                // Show detailed error message
+                let errorMsg = `❌ ${result.error}`;
+                if (result.details) {
+                    if (result.details.juzPrzeslane) {
+                        errorMsg += `\n\nFormularzy już przesłanych: ${result.details.juzPrzeslane}`;
+                    }
+                    if (result.details.niespelniajaOgraniczen) {
+                        errorMsg += `\n\nFormularzy niespełniających ograniczeń: ${result.details.niespelniajaOgraniczen}`;
+                        if (result.details.bledy && result.details.bledy.length > 0) {
+                            errorMsg += '\n\nSzczegóły błędów:';
+                            result.details.bledy.slice(0, 5).forEach((b: { id: number; reason: string }) => {
+                                errorMsg += `\n• Formularz #${b.id}: ${b.reason}`;
+                            });
+                            if (result.details.bledy.length > 5) {
+                                errorMsg += `\n... i ${result.details.bledy.length - 5} więcej`;
+                            }
+                        }
+                    }
+                    if (result.details.przekroczenieBudzetu) {
+                        const formatPLN = (val: number) => val.toLocaleString('pl-PL', { style: 'currency', currency: 'PLN' });
+                        errorMsg += `\n\n📊 Szczegóły przekroczenia:`;
+                        errorMsg += `\n• Suma potrzeb: ${formatPLN(result.details.sumaPotrzeb)}`;
+                        errorMsg += `\n• Limit kwoty: ${formatPLN(result.details.limitKwoty)}`;
+                        errorMsg += `\n• Przekroczenie: ${formatPLN(result.details.roznica)}`;
+                    }
+                }
+                alert(errorMsg);
             }
         } catch (err) {
             alert('Błąd połączenia z serwerem');
@@ -176,6 +203,25 @@ export const DepartmentDashboard: React.FC<DepartmentDashboardProps> = () => {
     const formatCurrency = (value: number | null) => {
         if (value === null || value === undefined) return '-';
         return value.toLocaleString('pl-PL', { style: 'currency', currency: 'PLN' });
+    };
+
+    const handleDelete = async (positionId: number) => {
+        if (!confirm('Czy na pewno chcesz usunąć ten formularz? Ta operacja jest nieodwracalna.')) return;
+
+        try {
+            const response = await fetch(`/api/formularze?pozycjaId=${positionId}`, {
+                method: 'DELETE'
+            });
+            const result = await response.json();
+            if (result.success) {
+                alert('✅ Formularz został usunięty.');
+                fetchBudgetPositions();
+            } else {
+                alert('❌ ' + (result.error || 'Nieznany błąd'));
+            }
+        } catch (err) {
+            alert('Błąd połączenia z serwerem');
+        }
     };
 
     return (
@@ -277,11 +323,12 @@ export const DepartmentDashboard: React.FC<DepartmentDashboardProps> = () => {
                                     <th>Limit 2026</th>
                                     <th>Różnica</th>
                                     <th>Status</th>
+                                    <th>Akcje</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {budgetPositions.length === 0 ? (
-                                    <tr><td colSpan={12} style={{ textAlign: 'center' }}>Brak formularzy dla tego departamentu</td></tr>
+                                    <tr><td colSpan={13} style={{ textAlign: 'center' }}>Brak formularzy dla tego departamentu</td></tr>
                                 ) : (
                                     budgetPositions.map((pos, index) => (
                                         <tr key={pos.id}>
@@ -304,6 +351,17 @@ export const DepartmentDashboard: React.FC<DepartmentDashboardProps> = () => {
                                                                 pos.status === 'rejected' ? 'Odrzucony' :
                                                                     pos.status || 'Brak'}
                                                 </span>
+                                            </td>
+                                            <td>
+                                                {(pos.status === 'draft' || pos.status === 'Roboczy' || !pos.status) && (
+                                                    <button
+                                                        className="btn btn-danger btn-sm"
+                                                        onClick={() => handleDelete(pos.id)}
+                                                        title="Usuń formularz"
+                                                    >
+                                                        🗑️ Usuń
+                                                    </button>
+                                                )}
                                             </td>
                                         </tr>
                                     ))
@@ -420,6 +478,19 @@ export const DepartmentDashboard: React.FC<DepartmentDashboardProps> = () => {
                 .btn-secondary:hover {
                     background: var(--color-surface-alt);
                     border-color: var(--color-primary);
+                }
+                .btn-danger {
+                    background: linear-gradient(135deg, var(--color-error) 0%, #b91c1c 100%);
+                    color: white;
+                    border: none;
+                }
+                .btn-danger:hover {
+                    transform: translateY(-1px);
+                    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+                }
+                .btn-sm {
+                    padding: 4px 10px;
+                    font-size: 0.8rem;
                 }
                 .btn:disabled {
                     opacity: 0.6;

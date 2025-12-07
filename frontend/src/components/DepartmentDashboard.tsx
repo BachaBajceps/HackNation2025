@@ -224,6 +224,67 @@ export const DepartmentDashboard: React.FC<DepartmentDashboardProps> = () => {
         }
     };
 
+    const exportToExcel = () => {
+        if (budgetPositions.length === 0) {
+            alert('Brak danych do eksportu');
+            return;
+        }
+
+        // CSV headers
+        const headers = [
+            'Lp.',
+            'Część',
+            'Dział',
+            'Rozdział',
+            'Paragraf',
+            'Źródło finansowania',
+            'Grupa wydatków',
+            'Nazwa zadania',
+            'Potrzeby 2026',
+            'Limit 2026',
+            'Różnica',
+            'Status'
+        ];
+
+        const statusMap: Record<string, string> = {
+            'draft': 'Roboczy',
+            'sent': 'Przesłany',
+            'approved': 'Zatwierdzony',
+            'rejected': 'Odrzucony'
+        };
+
+        // Convert data to CSV rows
+        const rows = budgetPositions.map((pos, index) => [
+            index + 1,
+            pos.czesc || '',
+            pos.dzial || '',
+            pos.rozdzial || '',
+            pos.paragraf || '',
+            pos.zrodloFinansowania || '',
+            pos.grupaWydatkow || '',
+            pos.nazwaZadania || pos.nazwaProjektu || '',
+            pos.potrzeby2026?.toFixed(2) || '0.00',
+            pos.limit2026?.toFixed(2) || '0.00',
+            pos.roznica2026?.toFixed(2) || '0.00',
+            statusMap[pos.status || ''] || pos.status || 'Brak'
+        ]);
+
+        // Build CSV content with BOM for Excel compatibility
+        const BOM = '\uFEFF';
+        const csvContent = BOM + [
+            headers.join(';'),
+            ...rows.map(row => row.map(cell => `"${cell}"`).join(';'))
+        ].join('\n');
+
+        // Create and download file
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `${departmentName}_formularze_${new Date().toISOString().split('T')[0]}.csv`;
+        link.click();
+        URL.revokeObjectURL(link.href);
+    };
+
     return (
         <div className="department-dashboard">
             <header className="dashboard-header">
@@ -259,6 +320,14 @@ export const DepartmentDashboard: React.FC<DepartmentDashboardProps> = () => {
                     >
                         Odśwież
                     </button>
+                    <button
+                        className="btn btn-secondary"
+                        onClick={exportToExcel}
+                        disabled={loading || budgetPositions.length === 0}
+                        style={{ marginLeft: '10px' }}
+                    >
+                        📥 Eksportuj Excel
+                    </button>
                 </div>
             </header>
 
@@ -267,7 +336,7 @@ export const DepartmentDashboard: React.FC<DepartmentDashboardProps> = () => {
             ) : (
                 <div className="dashboard-content">
                     <div className="table-container">
-                        <h3>Wytyczne i Ograniczenia (Zadania od Ministra)</h3>
+                        <h3>Decyzja Budżetowa - Limity Wydatków</h3>
                         <table className="forms-table">
                             <thead>
                                 <tr>

@@ -295,18 +295,101 @@ export const MinistryTaskForm: React.FC = () => {
         return getDisplayValue(key, map[key]);
     };
 
+    const exportToWord = () => {
+        if (savedTasks.length === 0) {
+            alert('Brak ograniczeń do eksportu');
+            return;
+        }
+
+        const today = new Date().toLocaleDateString('pl-PL');
+
+        // Build HTML document content (Word-compatible)
+        const htmlContent = `
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Załącznik nr 3 - Ograniczenia budżetowe</title>
+    <style>
+        body { font-family: 'Times New Roman', Times, serif; font-size: 12pt; margin: 2cm; }
+        h1 { text-align: center; font-size: 14pt; font-weight: bold; margin-bottom: 20pt; }
+        h2 { font-size: 12pt; font-weight: bold; margin-top: 20pt; margin-bottom: 10pt; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10pt; }
+        th, td { border: 1px solid #000; padding: 6pt 8pt; text-align: left; font-size: 10pt; }
+        th { background-color: #f0f0f0; font-weight: bold; }
+        .header-info { margin-bottom: 20pt; }
+        .header-info p { margin: 4pt 0; }
+        .footer { margin-top: 30pt; font-size: 10pt; }
+        .currency { text-align: right; }
+    </style>
+</head>
+<body>
+    <h1>Załącznik nr 3</h1>
+    <h2>Decyzja Budżetowa - Limity Wydatków</h2>
+    
+    <div class="header-info">
+        <p><strong>Data wygenerowania:</strong> ${today}</p>
+        <p><strong>Liczba ograniczeń:</strong> ${savedTasks.length}</p>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Lp.</th>
+                <th>Komórka organizacyjna</th>
+                <th>Część budżetowa</th>
+                <th>Dział</th>
+                <th>Rozdział</th>
+                <th>Paragraf</th>
+                <th>Rok budżetu</th>
+                <th>Kwota limitu</th>
+                <th>Termin wykonania</th>
+            </tr>
+        </thead>
+        <tbody>
+            ${savedTasks.map((task, index) => `
+                <tr>
+                    <td>${index + 1}</td>
+                    <td>${task.komorka_organizacyjna || '-'}</td>
+                    <td>${task.czesc_budzetowa || '-'}</td>
+                    <td>${task.dzial || '-'}</td>
+                    <td>${task.rozdzial || '-'}</td>
+                    <td>${task.paragraf || '-'}</td>
+                    <td>${task.rok_budzetu}</td>
+                    <td class="currency">${task.kwota?.toLocaleString('pl-PL', { style: 'currency', currency: 'PLN' }) || '-'}</td>
+                    <td>${new Date(task.termin_do).toLocaleDateString('pl-PL')}</td>
+                </tr>
+            `).join('')}
+        </tbody>
+    </table>
+
+    <div class="footer">
+        <p>Dokument wygenerowany automatycznie z systemu BFF.</p>
+    </div>
+</body>
+</html>`;
+
+        // Create and download file
+        const blob = new Blob([htmlContent], { type: 'application/msword' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `Zalacznik_nr_3_ograniczenia_${new Date().toISOString().split('T')[0]}.doc`;
+        link.click();
+        URL.revokeObjectURL(link.href);
+    };
+
     return (
         <div className="ministry-task-form">
             {showSuccess && (
                 <div className="ministry-task-form__success">
-                    ✓ Wszystkie zadania zapisane pomyślnie!
+                    ✓ Decyzja Budżetowa zapisana pomyślnie!
                 </div>
             )}
 
             <section className="ministry-task-form__section">
                 <h2 className="ministry-task-form__section-title">
                     <span className="ministry-task-form__section-icon">🏛️</span>
-                    Zadania od Ministerstwa - Definiowanie ograniczeń
+                    Decyzja Budżetowa - Definiowanie limitów
                 </h2>
 
                 {/* Filter Grid */}
@@ -377,7 +460,7 @@ export const MinistryTaskForm: React.FC = () => {
                         className="ministry-task-form__btn ministry-task-form__btn--add"
                         onClick={handleAddTask}
                     >
-                        + Dodaj ograniczenie
+                        + Dodaj pozycję limitu
                     </button>
                 </div>
             </section>
@@ -461,7 +544,7 @@ export const MinistryTaskForm: React.FC = () => {
                             onClick={handleSubmitAll}
                             disabled={saving}
                         >
-                            {saving ? 'Zapisywanie...' : 'Zapisz wszystkie zadania'}
+                            {saving ? 'Zapisywanie...' : 'Zapisz Decyzję Budżetową'}
                         </button>
                     </div>
                 </section>
@@ -469,10 +552,22 @@ export const MinistryTaskForm: React.FC = () => {
 
             {/* SAVED Tasks Table */}
             <section className="ministry-task-form__section">
-                <h2 className="ministry-task-form__section-title">
-                    <span className="ministry-task-form__section-icon">📋</span>
-                    Dodane ograniczenia (Baza danych) {loadingSaved && '(Odświeżanie...)'}
-                </h2>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                    <h2 className="ministry-task-form__section-title" style={{ margin: 0 }}>
+                        <span className="ministry-task-form__section-icon">📋</span>
+                        Dodane limity (Baza danych) {loadingSaved && '(Odświeżanie...)'}
+                    </h2>
+                    {savedTasks.length > 0 && (
+                        <button
+                            type="button"
+                            className="ministry-task-form__btn ministry-task-form__btn--secondary"
+                            onClick={exportToWord}
+                            style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+                        >
+                            📄 Eksportuj do Worda (Decyzja Budżetowa)
+                        </button>
+                    )}
+                </div>
                 {savedTasks.length === 0 ? (
                     <p style={{ padding: '1rem', color: 'var(--color-text-secondary)' }}>Brak zapisanych zadań.</p>
                 ) : (

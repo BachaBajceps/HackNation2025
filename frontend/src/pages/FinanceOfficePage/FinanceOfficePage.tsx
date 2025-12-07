@@ -91,9 +91,9 @@ export const FinanceOfficePage: React.FC = () => {
                         <div className="finance-page__cards">
                             <div className="finance-page__card" onClick={() => setActiveView('ministry')}>
                                 <div className="finance-page__card-icon">📋</div>
-                                <h3 className="finance-page__card-title">Zadanie od Ministerstwa</h3>
+                                <h3 className="finance-page__card-title">Decyzja Budżetowa</h3>
                                 <p className="finance-page__card-desc">
-                                    Utwórz nowe zadanie budżetowe dla departamentów
+                                    Definiuj limity wydatków dla departamentów
                                 </p>
                             </div>
                             <div className="finance-page__card" onClick={() => setActiveView('budget')}>

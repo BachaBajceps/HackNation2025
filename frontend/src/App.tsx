@@ -38,18 +38,7 @@ function MainApp() {
                         <BudgetForm defaultKomorkaOrganizacyjna={departmentName} />
                     </div>
                 );
-            case 'notes':
-                return (
-                    <div className="app__view">
-                        <button className="app__back-btn" onClick={() => setActiveView('dashboard')}>
-                            ← Powrót do panelu
-                        </button>
-                        <MinistryNotes
-                            departmentId={departmentId || 1}
-                            departmentName={departmentName || ''}
-                        />
-                    </div>
-                );
+
             case 'department':
                 return (
                     <div className="app__view">
@@ -79,13 +68,7 @@ function MainApp() {
                                     Utwórz i edytuj formularze budżetowe
                                 </p>
                             </div>
-                            <div className="app__card" onClick={() => setActiveView('notes')}>
-                                <div className="app__card-icon">📋</div>
-                                <h3 className="app__card-title">Uwagi od Ministra</h3>
-                                <p className="app__card-desc">
-                                    Przeglądaj i odpowiadaj na uwagi
-                                </p>
-                            </div>
+
                             <div className="app__card" onClick={() => setActiveView('department')}>
                                 <div className="app__card-icon">📊</div>
                                 <h3 className="app__card-title">Panel Departamentu</h3>

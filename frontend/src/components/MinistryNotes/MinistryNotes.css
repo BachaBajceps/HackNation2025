@@ -1,0 +1,57 @@
+.ministry-notes {
+    padding: 2rem;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.ministry-notes__section {
+    background: var(--card-bg, linear-gradient(145deg, #1a1d2e, #0d0f1a));
+    border-radius: 12px;
+    padding: 2rem;
+    border: 1px solid var(--border-color, rgba(255, 255, 255, 0.1));
+}
+
+.ministry-notes__title {
+    color: var(--text-primary, #fff);
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin: 0 0 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.ministry-notes__icon {
+    font-size: 1.75rem;
+}
+
+.ministry-notes__subtitle {
+    color: var(--text-secondary, rgba(255, 255, 255, 0.6));
+    font-size: 1rem;
+    margin: 0 0 2rem;
+}
+
+.ministry-notes__empty {
+    text-align: center;
+    padding: 3rem 2rem;
+    background: var(--empty-bg, rgba(255, 255, 255, 0.02));
+    border-radius: 8px;
+    border: 2px dashed var(--border-color, rgba(255, 255, 255, 0.1));
+}
+
+.ministry-notes__empty-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+}
+
+.ministry-notes__empty p {
+    color: var(--text-secondary, rgba(255, 255, 255, 0.6));
+    font-size: 1.125rem;
+    margin: 0 0 0.5rem;
+}
+
+.ministry-notes__empty-hint {
+    color: var(--text-muted, rgba(255, 255, 255, 0.4));
+    font-size: 0.875rem;
+}

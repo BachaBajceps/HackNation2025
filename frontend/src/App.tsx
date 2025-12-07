@@ -3,14 +3,12 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import { LoginPage } from './pages/LoginPage';
 import { FinanceOfficePage } from './pages/FinanceOfficePage';
 import { BudgetForm } from './components/BudgetForm';
-import { MinistryTaskForm } from './components/MinistryTaskForm';
+import { MinistryNotes } from './components/MinistryNotes';
+import { DepartmentDashboard } from './components/DepartmentDashboard';
+import { ThemeProvider, useTheme } from './context/ThemeContext';
 import './App.css';
 
-import { DepartmentDashboard } from './components/DepartmentDashboard';
-
-type FormType = 'budget' | 'ministry' | 'department';
-
-import { ThemeProvider, useTheme } from './context/ThemeContext';
+type FormType = 'budget' | 'notes' | 'department';
 
 function MainApp() {
     const { isLoggedIn, userType, departmentName, departmentId, logout } = useAuth();
@@ -49,7 +47,7 @@ function MainApp() {
                         {theme === 'light' ? '🌙' : '☀️'}
                     </button>
                     <div className="app__form-selector">
-                        <label htmlFor="formType" className="app__form-selector-label">Formularz:</label>
+                        <label htmlFor="formType" className="app__form-selector-label">Widok:</label>
                         <select
                             id="formType"
                             value={activeForm}
@@ -57,7 +55,7 @@ function MainApp() {
                             className="app__form-selector-select"
                         >
                             <option value="budget">Formularz Budżetowy</option>
-                            <option value="ministry">Formularz Zadania od Ministerstwa</option>
+                            <option value="notes">Uwagi od Ministra</option>
                             <option value="department">Panel Departamentu</option>
                         </select>
                     </div>
@@ -68,9 +66,18 @@ function MainApp() {
             </header>
 
             <main className="app__main">
-                {activeForm === 'budget' && <BudgetForm />}
-                {activeForm === 'ministry' && <MinistryTaskForm />}
-                {activeForm === 'department' && <DepartmentDashboard departamentId={departmentId || 1} />}
+                {activeForm === 'budget' && (
+                    <BudgetForm defaultKomorkaOrganizacyjna={departmentName} />
+                )}
+                {activeForm === 'notes' && (
+                    <MinistryNotes
+                        departmentId={departmentId || 1}
+                        departmentName={departmentName || ''}
+                    />
+                )}
+                {activeForm === 'department' && (
+                    <DepartmentDashboard />
+                )}
             </main>
 
             <footer className="app__footer">
@@ -91,5 +98,3 @@ function App() {
 }
 
 export default App;
-
-

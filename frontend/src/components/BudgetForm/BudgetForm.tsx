@@ -45,6 +45,48 @@ export const BudgetForm: React.FC = () => {
     // Filtruj budżety zadaniowe - wszystkie poziomy
     const fullTaskBudgets = taskBudgets;
 
+    const [matchingTask, setMatchingTask] = useState<{ taskId: number; description: string; matchedConstraint: string } | null>(null);
+
+    // Check for matching tasks when key fields change
+    React.useEffect(() => {
+        const checkTask = async () => {
+            if (!formData.czesc && !formData.dzial && !formData.komorkaOrganizacyjna) {
+                setMatchingTask(null);
+                return;
+            }
+
+            try {
+                const response = await fetch('http://localhost:3000/api/find-task', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        czesc: formData.czesc,
+                        dzial: formData.dzial,
+                        rozdzial: formData.rozdzial,
+                        paragraf: formData.paragraf,
+                        komorkaOrganizacyjna: formData.komorkaOrganizacyjna
+                    })
+                });
+
+                const result = await response.json();
+                if (result.found) {
+                    setMatchingTask({
+                        taskId: result.taskId,
+                        description: result.description,
+                        matchedConstraint: result.matchedConstraint
+                    });
+                } else {
+                    setMatchingTask(null);
+                }
+            } catch (err) {
+                console.error('Error checking task:', err);
+            }
+        };
+
+        const timeoutId = setTimeout(checkTask, 500); // Debounce
+        return () => clearTimeout(timeoutId);
+    }, [formData.czesc, formData.dzial, formData.rozdzial, formData.paragraf, formData.komorkaOrganizacyjna]);
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         const validationErrors = validate();
@@ -79,6 +121,28 @@ export const BudgetForm: React.FC = () => {
                 <div className="budget-form__success">
                     ✓ Formularz zapisany pomyślnie!
                 </div>
+            )}
+
+            {/* Sekcja 0: Powiązanie z zadaniem ministerstwa */}
+            {matchingTask && (
+                <section className="budget-form__section budget-form__section--highlight">
+                    <div className="budget-form__grid budget-form__grid--1">
+                        <FormField
+                            label="Przypisane zadanie od ministerstwa"
+                            htmlFor="linkedTask"
+                            readOnly
+                            hint={`Na podstawie: ${matchingTask.matchedConstraint}`}
+                        >
+                            <input
+                                type="text"
+                                id="linkedTask"
+                                value={matchingTask.description}
+                                readOnly
+                                className="budget-form__input--readonly-highlight"
+                            />
+                        </FormField>
+                    </div>
+                </section>
             )}
 
             {/* Sekcja 1: Klasyfikacja budżetowa */}

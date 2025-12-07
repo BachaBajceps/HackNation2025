@@ -153,10 +153,27 @@ export async function zapiszWierszBudzetowy(dane: WierszBudzetowyInput): Promise
             },
         });
 
-        // 6. Utwórz formularz
+        // 6. Znajdź pasujące zadanie ministerstwa
+        const matchingTask = await prisma.zadanie_ministerstwo.findFirst({
+            where: {
+                ograniczenie: {
+                    OR: [
+                        { komorka_organizacyjna: dane.komorkaOrganizacyjna || undefined },
+                        { dzial: dane.dzial || undefined },
+                        { rozdzial: dane.rozdzial || undefined },
+                        { paragraf: dane.paragraf || undefined },
+                        { czesc_budzetowa: dane.czesc || undefined }
+                    ]
+                }
+            },
+            orderBy: { data_utworzenia: 'desc' }
+        });
+
+        // 7. Utwórz formularz
         const formularz = await prisma.formularz.create({
             data: {
                 pozycja_budzetu_id: pozycja.id,
+                zadanie_ministerstwo_id: matchingTask?.id || null,
                 data_utworzenia: new Date(),
                 status: 'draft',
             },

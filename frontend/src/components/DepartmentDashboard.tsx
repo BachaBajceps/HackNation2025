@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Formularz } from '../types/budget';
+import { parseExcelFile, ParsedFormularz } from '../utils/excelParser';
+import { ImportPreviewModal } from './ImportPreviewModal';
 
 interface DepartmentDashboardProps {
     departamentId?: number; // Opcjonalne, domyślnie 1
@@ -11,6 +13,10 @@ export const DepartmentDashboard: React.FC<DepartmentDashboardProps> = ({ depart
     const [error, setError] = useState<string | null>(null);
     const [sendLoading, setSendLoading] = useState(false);
     const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+    // Excel import state
+    const [importData, setImportData] = useState<ParsedFormularz[] | null>(null);
+    const [importLoading, setImportLoading] = useState(false);
 
     // Mockowe zadanie_id, normalnie powinno przychodzić z kontekstu lub wyboru
     const zadanieId = 1;
@@ -41,16 +47,58 @@ export const DepartmentDashboard: React.FC<DepartmentDashboardProps> = ({ depart
         fileInputRef.current?.click();
     };
 
-    const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
         if (file) {
-            alert(`Wybrano plik: ${file.name}. Import danych zostanie zaimplementowany później.`);
-            // TODO: Implement Excel import logic here
+            try {
+                const parsed = await parseExcelFile(file);
+                if (parsed.length === 0) {
+                    alert('Plik Excel nie zawiera danych do importu.');
+                    return;
+                }
+                setImportData(parsed);
+            } catch (err) {
+                alert(`Błąd: ${err instanceof Error ? err.message : 'Nieznany błąd'}`);
+            }
         }
         // Reset input value to allow selecting the same file again
         if (event.target) {
             event.target.value = '';
         }
+    };
+
+    const handleImportConfirm = async () => {
+        if (!importData) return;
+
+        setImportLoading(true);
+        try {
+            const response = await fetch('/api/formularze', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    akcja: 'bulk_import',
+                    departament_id: departamentId,
+                    zadanie_id: zadanieId,
+                    formularze: importData,
+                })
+            });
+            const result = await response.json();
+            if (result.success) {
+                alert(`Pomyślnie zaimportowano ${result.data?.imported || importData.length} formularzy.`);
+                setImportData(null);
+                fetchForms();
+            } else {
+                alert('Błąd importu: ' + (result.error || 'Nieznany błąd'));
+            }
+        } catch (err) {
+            alert('Błąd połączenia z serwerem');
+        } finally {
+            setImportLoading(false);
+        }
+    };
+
+    const handleImportCancel = () => {
+        setImportData(null);
     };
 
     const handleSendAll = async () => {
@@ -158,6 +206,15 @@ export const DepartmentDashboard: React.FC<DepartmentDashboardProps> = ({ depart
                         )}
                     </tbody>
                 </table>
+            )}
+
+            {importData && (
+                <ImportPreviewModal
+                    data={importData}
+                    onConfirm={handleImportConfirm}
+                    onCancel={handleImportCancel}
+                    isLoading={importLoading}
+                />
             )}
 
             <style>{`

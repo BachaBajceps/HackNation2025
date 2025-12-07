@@ -164,124 +164,187 @@ async function main() {
     await prisma.$transaction(
         expenditureGroups.map(g => prisma.grupa_wydatkow.create({ data: { nazwa: g } }))
     );
-    console.log(`✓ Seeded expenditure groups`);
-
-
     // --- LOGICAL DATA GENERATION ---
-    console.log('🏗️  Building logical data structures...');
+    console.log('🏗️  Building logical data structures with VALID SCENARIOS...');
 
-    const getRandom = <T>(arr: T[]): T => arr[Math.floor(Math.random() * arr.length)];
-    const getRandomInt = (min: number, max: number) => Math.floor(Math.random() * (max - min + 1)) + min;
+    // Helpers
+    const getCode = (code: string, arr: any[]) => arr.find(x => x.kod === code)?.id;
 
-    // Fetch IDs
-    const allDetailTasks = await prisma.budzet_zadaniowy_szczegolowy.findMany();
-    const allChapters = await prisma.rozdzial.findMany({ include: { dzial: true } });
-    const allParagraphs = await prisma.paragraf.findMany();
-    const allSources = await prisma.zrodlo_finansowania.findMany();
-    const allParts = await prisma.czesc_budzetowa.findMany();
-    const allGroups = await prisma.grupa_wydatkow.findMany();
-
-    // 1. Seed `opis_zadania` and `dane_finansowe` linked to `zadanie_szczegoly`
-    const generatedDetailsIds: number[] = [];
-    const TASKS_COUNT = 100;
-
-    console.log('📋 Seeding details (opis & finanse)...');
-    for (let i = 0; i < TASKS_COUNT; i++) {
-        const desc = await prisma.opis_zadania.create({
+    // SCENARIO 1: IT Department Infrastructure Upgrade
+    // Task Definition
+    console.log('🔹 Scenario 1: IT Department - Infrastructure Upgrade');
+    const deptIT = departments.find(d => d.name === 'Departament Informatyzacji');
+    if (deptIT) {
+        // 1. Create Ministry Task
+        const taskIT = await prisma.zadanie_ministerstwo.create({
             data: {
-                nazwa_zadania: `Zadanie inwestycyjne nr ${i + 1}: Modernizacja infrastruktury`,
-                uzasadnienie: 'Konieczność dostosowania do nowych wymogów bezpieczeństwa...',
-                przeznaczenie_wydatkow: 'Zakup materiałów budowlanych oraz usługi remontowe.',
-                dotacja_partner: Math.random() > 0.8 ? 'Partnerstwo Publiczno-Prywatne' : null,
-                uwagi: Math.random() > 0.9 ? 'Wymaga pilnej realizacji' : null
-            }
-        });
-
-        const fin = await prisma.dane_finansowe.create({
-            data: {
-                rok: 2025,
-                potrzeby_finansowe: parseFloat((Math.random() * 1000000).toFixed(2)),
-                limit_wydatkow: parseFloat((Math.random() * 800000).toFixed(2)),
-                kwota_niezabezpieczona: parseFloat((Math.random() * 200000).toFixed(2)),
-                kwota_umowy: Math.random() > 0.5 ? parseFloat((Math.random() * 500000).toFixed(2)) : null,
-                nr_umowy: Math.random() > 0.5 ? `UM/${2024}/${i}` : null
-            }
-        });
-
-        const detail = await prisma.zadanie_szczegoly.create({
-            data: {
-                opis_zadania_id: desc.id,
-                dane_finansowe_id: fin.id
-            }
-        });
-        generatedDetailsIds.push(detail.id);
-    }
-
-    // 3. Seed `zadanie_ministerstwo`
-    console.log('📋 Seeding zadania ministerstwa...');
-    const minTasksIds: number[] = [];
-    for (let i = 0; i < 20; i++) {
-        const t = await prisma.zadanie_ministerstwo.create({
-            data: {
-                // Flat fields (replacing restriction)
-                komorka_organizacyjna: Math.random() > 0.5 ? getRandom(departments).name : null,
-                czesc_budzetowa: Math.random() > 0.5 ? getRandom(allParts).kod : null,
-
-                kwota: parseFloat((Math.random() * 5000000).toFixed(2)),
-                stan: ['W przygotowaniu', 'Zatwierdzone', 'Odrzucone'][getRandomInt(0, 2)],
+                komorka_organizacyjna: deptIT.name,
+                czesc_budzetowa: '19', // Budżet, finanse publiczne... (Example)
+                dzial: '750', // Administracja publiczna
+                rozdzial: '75020', // Starostwa powiatowe (Example valid chapter)
+                paragraf: '4210', // Zakup materiałów i wyposażenia
+                kwota: 2500000,
+                stan: 'Zatwierdzone',
+                rok_budzetu: 2025,
+                termin_do: new Date('2025-11-30'),
                 data_utworzenia: new Date(),
-                termin_do: new Date('2025-12-31'),
-                rok_budzetu: 2025
+                zrodlo_finansowania: '0', // Budżet państwa
+                grupa_wydatkow: 'Wydatki bieżące'
             }
         });
-        minTasksIds.push(t.id);
-    }
 
-    // 4. Seed `pozycja_budzetu`
-    console.log('📋 Seeding pozycje budzetu...');
-    const positionsIds: number[] = [];
-    for (let i = 0; i < 150; i++) {
-        const chapter = getRandom(allChapters);
-        const detailId = getRandom(generatedDetailsIds);
+        // 2. Create Budget Positions matching the task
+        const positionsIT = [
+            { name: 'Zakup serwerów Dell PowerEdge', kwota: 1200000 },
+            { name: 'Licencje Oracle Database', kwota: 800000 },
+            { name: 'Modernizacja okablowania LAN', kwota: 300000 }
+        ];
 
-        const pos = await prisma.pozycja_budzetu.create({
-            data: {
-                zadanie_szczegoly_id: detailId,
-                czesc_budzetowa_id: getRandom(allParts).id,
-                dzial_id: chapter.dzial_id,
-                rozdzial_id: chapter.id,
-                paragraf_id: getRandom(allParagraphs).id,
-                zrodlo_finansowania_id: getRandom(allSources).id,
-                grupa_wydatkow_id: getRandom(allGroups).id,
-                budzet_zadaniowy_szczegolowy_id: getRandom(allDetailTasks).id,
-                nazwa_programu_projektu: Math.random() > 0.8 ? `Projekt UE ${i}` : null,
-                nazwa_komorki_organizacyjnej: getRandom(departments).name,
-                dysponent_srodkow: getRandom(departments).name,
-                budzet: '2025',
-                plan_wi: (Math.random() * 50000).toFixed(2)
+        for (const pos of positionsIT) {
+            // Find IDs
+            const dzialId = await prisma.dzial.findUnique({ where: { kod: '750' } });
+            const rozdzialId = await prisma.rozdzial.findUnique({ where: { kod: '75020' } });
+            const paragrafId = await prisma.paragraf.findUnique({ where: { kod: '4210' } });
+            const zrodloId = await prisma.zrodlo_finansowania.findUnique({ where: { kod: '0' } });
+            const grupaId = await prisma.grupa_wydatkow.findFirst({ where: { nazwa: 'Wydatki bieżące' } });
+            const czescId = await prisma.czesc_budzetowa.findUnique({ where: { kod: '19' } });
+
+
+            if (dzialId && rozdzialId && paragrafId && zrodloId && grupaId && czescId) {
+                // Details
+                const desc = await prisma.opis_zadania.create({
+                    data: {
+                        nazwa_zadania: pos.name,
+                        uzasadnienie: 'Zgodnie z planem modernizacji 2025',
+                        przeznaczenie_wydatkow: 'Infrastruktura IT'
+                    }
+                });
+                const fin = await prisma.dane_finansowe.create({
+                    data: {
+                        rok: 2025,
+                        potrzeby_finansowe: pos.kwota,
+                        limit_wydatkow: pos.kwota,
+                        kwota_niezabezpieczona: 0
+                    }
+                });
+                const detail = await prisma.zadanie_szczegoly.create({
+                    data: { opis_zadania_id: desc.id, dane_finansowe_id: fin.id }
+                });
+
+                // Position
+                const pozycja = await prisma.pozycja_budzetu.create({
+                    data: {
+                        zadanie_szczegoly_id: detail.id,
+                        czesc_budzetowa_id: czescId.id,
+                        dzial_id: dzialId.id,
+                        rozdzial_id: rozdzialId.id,
+                        paragraf_id: paragrafId.id,
+                        zrodlo_finansowania_id: zrodloId.id,
+                        grupa_wydatkow_id: grupaId.id,
+                        nazwa_komorki_organizacyjnej: deptIT.name,
+                        dysponent_srodkow: deptIT.name,
+                        budzet: '2025',
+                        plan_wi: '0'
+                    }
+                });
+
+                // Link to Task (Formularz)
+                await prisma.formularz.create({
+                    data: {
+                        pozycja_budzetu_id: pozycja.id,
+                        zadanie_ministerstwo_id: taskIT.id,
+                        status: 'Przesłany',
+                        data_utworzenia: new Date(),
+                        rok_1: pos.kwota
+                    }
+                });
             }
-        });
-        positionsIds.push(pos.id);
+        }
     }
 
-    // 5. Seed `formularz` linking Positions to Ministry Tasks
-    console.log('📋 Seeding formularze...');
-    for (const posId of positionsIds) {
-        // Not all have ministry tasks
-        const hasMinTask = Math.random() > 0.6;
+    // SCENARIO 2: HR Department Training
+    console.log('🔹 Scenario 2: HR Department - Soft Skills Training');
+    const deptHR = departments.find(d => d.name === 'Departament Kadr i Szkoleń'); // Adjust name if needed from JSON
+    // Checking JSON path... let's assume 'Departament Kadr' if exists, or just pick first available if not found specific
+    const targetDeptName = deptHR ? deptHR.name : departments[1]?.name; // Fallback
 
-        await prisma.formularz.create({
+    if (targetDeptName) {
+        const taskHR = await prisma.zadanie_ministerstwo.create({
             data: {
-                pozycja_budzetu_id: posId,
-                zadanie_ministerstwo_id: hasMinTask ? getRandom(minTasksIds) : null,
+                komorka_organizacyjna: targetDeptName,
+                czesc_budzetowa: '19',
+                dzial: '750',
+                rozdzial: '75020',
+                paragraf: '4300', // Zakup usług pozostałych
+                kwota: 150000,
+                stan: 'W przygotowaniu',
+                rok_budzetu: 2025,
+                termin_do: new Date('2025-06-30'),
                 data_utworzenia: new Date(),
-                status: ['Roboczy', 'Przesłany', 'Zatwierdzony'][getRandomInt(0, 2)],
-                data_przeslania: Math.random() > 0.5 ? new Date() : null
+                zrodlo_finansowania: '0',
+                grupa_wydatkow: 'Wydatki bieżące'
             }
         });
+
+        // Create one matching position
+        const positionsHR = [{ name: 'Szkolenia miękkie dla kadry zarządzającej', kwota: 50000 }];
+
+        const paragraf4300 = await prisma.paragraf.findUnique({ where: { kod: '4300' } });
+
+        if (paragraf4300) {
+            for (const pos of positionsHR) {
+                // Details creation simplified...
+                const desc = await prisma.opis_zadania.create({
+                    data: { nazwa_zadania: pos.name, uzasadnienie: 'Podnoszenie kwalifikacji', przeznaczenie_wydatkow: 'Szkolenia' }
+                });
+                const fin = await prisma.dane_finansowe.create({
+                    data: { rok: 2025, potrzeby_finansowe: pos.kwota, limit_wydatkow: pos.kwota, kwota_niezabezpieczona: 0 }
+                });
+                const detail = await prisma.zadanie_szczegoly.create({
+                    data: { opis_zadania_id: desc.id, dane_finansowe_id: fin.id }
+                });
+
+                // Helper to find ID safely? Using previous vars
+                const dzialId = await prisma.dzial.findUnique({ where: { kod: '750' } });
+                const rozdzialId = await prisma.rozdzial.findUnique({ where: { kod: '75020' } });
+                const zrodloId = await prisma.zrodlo_finansowania.findUnique({ where: { kod: '0' } });
+                const grupaId = await prisma.grupa_wydatkow.findFirst({ where: { nazwa: 'Wydatki bieżące' } });
+                const czescId = await prisma.czesc_budzetowa.findUnique({ where: { kod: '19' } });
+
+                if (dzialId && rozdzialId && zrodloId && grupaId && czescId) {
+                    const pozycja = await prisma.pozycja_budzetu.create({
+                        data: {
+                            zadanie_szczegoly_id: detail.id,
+                            czesc_budzetowa_id: czescId.id,
+                            dzial_id: dzialId.id,
+                            rozdzial_id: rozdzialId.id,
+                            paragraf_id: paragraf4300.id,
+                            zrodlo_finansowania_id: zrodloId.id,
+                            grupa_wydatkow_id: grupaId.id,
+                            nazwa_komorki_organizacyjnej: targetDeptName,
+                            dysponent_srodkow: targetDeptName,
+                            budzet: '2025',
+                            plan_wi: '0'
+                        }
+                    });
+
+                    // Link
+                    await prisma.formularz.create({
+                        data: {
+                            pozycja_budzetu_id: pozycja.id,
+                            zadanie_ministerstwo_id: taskHR.id,
+                            status: 'Roboczy',
+                            data_utworzenia: new Date(),
+                            rok_1: pos.kwota
+                        }
+                    });
+                }
+            }
+        }
     }
 
-    console.log('✅ Full database seeding completed successfully!');
+
+    console.log('✅ Full database seeding completed successfully with REALISTIC scenarios!');
 }
 
 main()

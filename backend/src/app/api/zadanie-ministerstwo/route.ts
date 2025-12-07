@@ -91,8 +91,28 @@ export async function GET(request: NextRequest) {
     try {
         const { searchParams } = new URL(request.url);
         const rok = searchParams.get('rok');
+        const komorka = searchParams.get('komorka');
 
-        const where = rok ? { rok_budzetu: parseInt(rok) } : {};
+        const where: any = {};
+        if (rok) where.rok_budzetu = parseInt(rok);
+        if (komorka) {
+            where.OR = [
+                { komorka_organizacyjna: komorka },
+                { komorka_organizacyjna: null } // Include tasks without specific department assignment? Maybe user wants ONLY specific?
+                // Request says "should be displayed only for department it concerns".
+                // So strict equality is better.
+            ];
+            // Wait, if I set komorka_organizacyjna to null, it applies to whom?
+            // Usually "null" means "General" or "All"?
+            // If user meant strict mapping, I should just use eqaulity.
+            // But let's check MinistryTaskForm logic. If user selects empty komorka, it saves as null?
+            // "komorka_organizacyjna: data.komorka || null" in POST.
+            // If null, does it mean "All departments"? Or "None"?
+            // Assuming strict filtering for now based on "only for department it concerns".
+            // If I want to allow global tasks I would add OR { komorka_organizacyjna: null }.
+            // I'll stick to strict equality for now as per specific request.
+            where.komorka_organizacyjna = komorka;
+        }
 
         const zadania = await prisma.zadanie_ministerstwo.findMany({
             where,

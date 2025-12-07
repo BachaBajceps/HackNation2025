@@ -20,12 +20,26 @@ interface BudgetPosition {
     roznica2026: number | null;
 }
 
+interface MinistryTask {
+    id: number;
+    komorka_organizacyjna: string | null;
+    dzial: string | null;
+    rozdzial: string | null;
+    paragraf: string | null;
+    czesc_budzetowa: string | null;
+    rok_budzetu: number;
+    kwota: number;
+    termin_do: string;
+    stan: string;
+}
+
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 interface DepartmentDashboardProps { }
 
 export const DepartmentDashboard: React.FC<DepartmentDashboardProps> = () => {
     const { departmentName } = useAuth();
     const [budgetPositions, setBudgetPositions] = useState<BudgetPosition[]>([]);
+    const [ministryTasks, setMinistryTasks] = useState<MinistryTask[]>([]);
     const [loading, setLoading] = useState(false);
 
     // Excel import state
@@ -45,13 +59,24 @@ export const DepartmentDashboard: React.FC<DepartmentDashboardProps> = () => {
         setLoading(true);
         try {
             const komorka = departmentName || '';
-            const response = await fetch(`/api/budzet/zestawienie?komorka=${encodeURIComponent(komorka)}`);
-            const result = await response.json();
-            if (result.success) {
-                setBudgetPositions(result.data || []);
+
+            // Parallel fetch
+            const [budgetRes, tasksRes] = await Promise.all([
+                fetch(`/api/budzet/zestawienie?komorka=${encodeURIComponent(komorka)}`),
+                fetch(`/api/zadanie-ministerstwo?komorka=${encodeURIComponent(komorka)}`)
+            ]);
+
+            const budgetResult = await budgetRes.json();
+            const tasksResult = await tasksRes.json();
+
+            if (budgetResult.success) {
+                setBudgetPositions(budgetResult.data || []);
+            }
+            if (tasksResult.success) {
+                setMinistryTasks(tasksResult.data || []);
             }
         } catch (err) {
-            console.error('Error fetching budget positions:', err);
+            console.error('Error fetching dashboard data:', err);
         } finally {
             setLoading(false);
         }
@@ -193,57 +218,102 @@ export const DepartmentDashboard: React.FC<DepartmentDashboardProps> = () => {
             {loading ? (
                 <div className="loading">Ładowanie...</div>
             ) : (
-                <div className="table-container">
-                    <h3>Zestawienie pozycji budżetowych</h3>
-                    <table className="forms-table">
-                        <thead>
-                            <tr>
-                                <th>Lp.</th>
-                                <th>Część</th>
-                                <th>Dział</th>
-                                <th>Rozdział</th>
-                                <th>Paragraf</th>
-                                <th>Źródło</th>
-                                <th>Grupa wydatków</th>
-                                <th>Nazwa zadania</th>
-                                <th>Potrzeby 2026</th>
-                                <th>Limit 2026</th>
-                                <th>Różnica</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {budgetPositions.length === 0 ? (
-                                <tr><td colSpan={11} style={{ textAlign: 'center' }}>Brak formularzy dla tego departamentu</td></tr>
-                            ) : (
-                                budgetPositions.map((pos, index) => (
-                                    <tr key={pos.id}>
-                                        <td>{index + 1}</td>
-                                        <td>{pos.czesc}</td>
-                                        <td>{pos.dzial}</td>
-                                        <td>{pos.rozdzial}</td>
-                                        <td>{pos.paragraf}</td>
-                                        <td>{pos.zrodloFinansowania}</td>
-                                        <td>{pos.grupaWydatkow}</td>
-                                        <td>{pos.nazwaZadania || pos.nazwaProjektu || '-'}</td>
-                                        <td className="currency">{formatCurrency(pos.potrzeby2026)}</td>
-                                        <td className="currency">{formatCurrency(pos.limit2026)}</td>
-                                        <td className="currency">{formatCurrency(pos.roznica2026)}</td>
-                                    </tr>
-                                ))
-                            )}
-                        </tbody>
-                    </table>
-                </div>
+                <div className="dashboard-content">
+                    <div className="table-container">
+                        <h3>Wytyczne i Ograniczenia (Zadania od Ministra)</h3>
+                        <table className="forms-table">
+                            <thead>
+                                <tr>
+                                    <th>Rok</th>
+                                    <th>Część</th>
+                                    <th>Dział</th>
+                                    <th>Rozdział</th>
+                                    <th>Paragraf</th>
+                                    <th>Kwota</th>
+                                    <th>Termin</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {ministryTasks.length === 0 ? (
+                                    <tr><td colSpan={8} style={{ textAlign: 'center' }}>Brak zadań przypisanych do Twojego departamentu</td></tr>
+                                ) : (
+                                    ministryTasks.map((task) => (
+                                        <tr key={task.id}>
+                                            <td>{task.rok_budzetu}</td>
+                                            <td>{task.czesc_budzetowa || '-'}</td>
+                                            <td>{task.dzial || '-'}</td>
+                                            <td>{task.rozdzial || '-'}</td>
+                                            <td>{task.paragraf || '-'}</td>
+                                            <td className="currency">{formatCurrency(task.kwota)}</td>
+                                            <td>{new Date(task.termin_do).toLocaleDateString()}</td>
+                                            <td>
+                                                <span className={`status-badge status-${task.stan?.toLowerCase() || 'nowe'}`}>
+                                                    {task.stan || 'Nowe'}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    ))
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div className="table-container" style={{ marginTop: '40px' }}>
+                        <h3>Zestawienie pozycji budżetowych</h3>
+                        <table className="forms-table">
+                            <thead>
+                                <tr>
+                                    <th>Lp.</th>
+                                    <th>Część</th>
+                                    <th>Dział</th>
+                                    <th>Rozdział</th>
+                                    <th>Paragraf</th>
+                                    <th>Źródło</th>
+                                    <th>Grupa wydatków</th>
+                                    <th>Nazwa zadania</th>
+                                    <th>Potrzeby 2026</th>
+                                    <th>Limit 2026</th>
+                                    <th>Różnica</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {budgetPositions.length === 0 ? (
+                                    <tr><td colSpan={11} style={{ textAlign: 'center' }}>Brak formularzy dla tego departamentu</td></tr>
+                                ) : (
+                                    budgetPositions.map((pos, index) => (
+                                        <tr key={pos.id}>
+                                            <td>{index + 1}</td>
+                                            <td>{pos.czesc}</td>
+                                            <td>{pos.dzial}</td>
+                                            <td>{pos.rozdzial}</td>
+                                            <td>{pos.paragraf}</td>
+                                            <td>{pos.zrodloFinansowania}</td>
+                                            <td>{pos.grupaWydatkow}</td>
+                                            <td>{pos.nazwaZadania || pos.nazwaProjektu || '-'}</td>
+                                            <td className="currency">{formatCurrency(pos.potrzeby2026)}</td>
+                                            <td className="currency">{formatCurrency(pos.limit2026)}</td>
+                                            <td className="currency">{formatCurrency(pos.roznica2026)}</td>
+                                        </tr>
+                                    ))
+                                )}
+                            </tbody>
+                        </table>
+
+                    </div>
+                </div >
             )}
 
-            {importData && (
-                <ImportPreviewModal
-                    data={importData}
-                    onConfirm={handleImportConfirm}
-                    onCancel={handleImportCancel}
-                    isLoading={importLoading}
-                />
-            )}
+            {
+                importData && (
+                    <ImportPreviewModal
+                        data={importData}
+                        onConfirm={handleImportConfirm}
+                        onCancel={handleImportCancel}
+                        isLoading={importLoading}
+                    />
+                )
+            }
 
             <style>{`
                 .department-dashboard {
@@ -350,6 +420,6 @@ export const DepartmentDashboard: React.FC<DepartmentDashboardProps> = () => {
                     color: var(--color-text-muted);
                 }
             `}</style>
-        </div>
+        </div >
     );
 };

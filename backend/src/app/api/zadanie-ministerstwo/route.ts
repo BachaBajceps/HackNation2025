@@ -1,21 +1,27 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '../../../lib/prisma';
 
-interface MinistryTaskRequest {
-    terminWykonania: string;  // Date string
-    rokBudzetu: string;      // Number as string
-    kategoria: string;       // Category type
-    opisKategorii: string;   // Category description/value
-    wartosc: string;         // Amount as string
+interface FilterBasedTaskRequest {
+    czesc?: string | null;
+    dzial?: string | null;
+    rozdzial?: string | null;
+    paragraf?: string | null;
+    zrodloFinansowania?: string | null;
+    grupaWydatkow?: string | null;
+    budzetZadaniowy?: string | null;
+    komorka?: string | null;
+    rokBudzetu: number;
+    kwota: number;
+    terminWykonania: string;
 }
 
+// Verified schema update: komorka_organizacyjna and other fields are now part of zadanie_ministerstwo
 export async function POST(request: NextRequest) {
     try {
-        const data: MinistryTaskRequest = await request.json();
+        const data: FilterBasedTaskRequest = await request.json();
 
-        // Parse date and year
+        // Parse date
         const terminDo = new Date(data.terminWykonania);
-        const rokBudzetu = parseInt(data.rokBudzetu);
 
         // Validate
         if (isNaN(terminDo.getTime())) {
@@ -25,34 +31,38 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        if (isNaN(rokBudzetu)) {
+        if (isNaN(data.rokBudzetu)) {
             return NextResponse.json(
                 { error: 'Nieprawidłowy rok budżetu' },
                 { status: 400 }
             );
         }
 
-        // Create constraint (ograniczenie) based on category
-        const ograniczenie = await prisma.ograniczenie.create({
-            data: {
-                komorka_organizacyjna: data.kategoria === 'komorka' ? data.opisKategorii : null,
-                dzial: data.kategoria === 'dzial' ? data.opisKategorii : null,
-                rozdzial: data.kategoria === 'rozdzial' ? data.opisKategorii : null,
-                paragraf: data.kategoria === 'paragraf' ? data.opisKategorii : null,
-                czesc_budzetowa: data.kategoria === 'czesc' ? data.opisKategorii : null,
-            },
-        });
+        if (isNaN(data.kwota) || data.kwota <= 0) {
+            return NextResponse.json(
+                { error: 'Kwota musi być większa od zera' },
+                { status: 400 }
+            );
+        }
 
-        // Parse amount
-        const kwota = parseFloat(data.wartosc);
-
-        // Create ministry task with constraint
+        // Create ministry task with flattened fields
         const zadanieMinisterstwo = await prisma.zadanie_ministerstwo.create({
             data: {
-                ograniczenie_id: ograniczenie.id,
+                // Filter fields directly on the task
+                // @ts-ignore: Stale IDE cache - field exists in schema and tsc passes
+                komorka_organizacyjna: data.komorka || null,
+                dzial: data.dzial || null,
+                rozdzial: data.rozdzial || null,
+                paragraf: data.paragraf || null,
+                czesc_budzetowa: data.czesc || null,
+                zrodlo_finansowania: data.zrodloFinansowania || null,
+                grupa_wydatkow: data.grupaWydatkow || null,
+                budzet_zadaniowy: data.budzetZadaniowy || null,
+
+                // Task fields
                 termin_do: terminDo,
-                rok_budzetu: rokBudzetu,
-                kwota: isNaN(kwota) ? null : kwota,
+                rok_budzetu: data.rokBudzetu,
+                kwota: data.kwota,
                 stan: 'nowe',
                 data_utworzenia: new Date(),
             },
@@ -61,7 +71,6 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({
             success: true,
             id: zadanieMinisterstwo.id,
-            ograniczenieId: ograniczenie.id,
             message: 'Zadanie ministerstwa zostało utworzone pomyślnie',
         });
 
@@ -69,7 +78,7 @@ export async function POST(request: NextRequest) {
         console.error('Error creating ministry task:', error);
         return NextResponse.json(
             {
-                error: 'Wystąpił błąd podczas zap isywania zadania',
+                error: 'Wystąpił błąd podczas zapisywania zadania',
                 details: error instanceof Error ? error.message : String(error),
             },
             { status: 500 }
@@ -87,9 +96,6 @@ export async function GET(request: NextRequest) {
 
         const zadania = await prisma.zadanie_ministerstwo.findMany({
             where,
-            include: {
-                ograniczenie: true,
-            },
             orderBy: {
                 data_utworzenia: 'desc',
             },

@@ -156,15 +156,13 @@ export async function zapiszWierszBudzetowy(dane: WierszBudzetowyInput): Promise
         // 6. Znajdź pasujące zadanie ministerstwa
         const matchingTask = await prisma.zadanie_ministerstwo.findFirst({
             where: {
-                ograniczenie: {
-                    OR: [
-                        { komorka_organizacyjna: dane.komorkaOrganizacyjna || undefined },
-                        { dzial: dane.dzial || undefined },
-                        { rozdzial: dane.rozdzial || undefined },
-                        { paragraf: dane.paragraf || undefined },
-                        { czesc_budzetowa: dane.czesc || undefined }
-                    ]
-                }
+                OR: [
+                    { komorka_organizacyjna: dane.komorkaOrganizacyjna || undefined },
+                    { dzial: dane.dzial || undefined },
+                    { rozdzial: dane.rozdzial || undefined },
+                    { paragraf: dane.paragraf || undefined },
+                    { czesc_budzetowa: dane.czesc || undefined }
+                ]
             },
             orderBy: { data_utworzenia: 'desc' }
         });

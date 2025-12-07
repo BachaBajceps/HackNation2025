@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { Formularz } from '../types/budget';
+
 import { parseExcelFile, ParsedFormularz } from '../utils/excelParser';
 import { ImportPreviewModal } from './ImportPreviewModal';
 

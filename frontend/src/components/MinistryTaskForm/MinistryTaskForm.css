@@ -222,3 +222,131 @@
     background: var(--color-surface-alt);
     border-color: var(--color-text-muted);
 }
+
+/* 4-column grid for filters */
+.ministry-task-form__grid--4 {
+    grid-template-columns: repeat(4, 1fr);
+}
+
+@media (max-width: 1200px) {
+    .ministry-task-form__grid--4 {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 600px) {
+    .ministry-task-form__grid--4 {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Subtitle for sections */
+.ministry-task-form__subtitle {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--color-text-secondary);
+    margin: 0 0 1rem 0;
+}
+
+/* Filters and Budget sections */
+.ministry-task-form__filters,
+.ministry-task-form__budget {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px dashed var(--color-border);
+}
+
+/* Add button action area */
+.ministry-task-form__add-action {
+    display: flex;
+    justify-content: center;
+    padding-top: 0.5rem;
+}
+
+.ministry-task-form__btn--add {
+    background: linear-gradient(135deg, #28a745, #20c997);
+    color: white;
+    padding: 1rem 2.5rem;
+    font-size: 1.1rem;
+}
+
+.ministry-task-form__btn--add:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+}
+
+/* Table container */
+.ministry-task-form__table-container {
+    overflow-x: auto;
+    margin-bottom: 1rem;
+}
+
+.ministry-task-form__table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+
+.ministry-task-form__table th,
+.ministry-task-form__table td {
+    padding: 0.75rem 0.5rem;
+    text-align: left;
+    border-bottom: 1px solid var(--color-border);
+    white-space: nowrap;
+}
+
+.ministry-task-form__table th {
+    background: var(--color-surface-alt);
+    font-weight: 600;
+    color: var(--color-text-secondary);
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    letter-spacing: 0.5px;
+}
+
+.ministry-task-form__table tbody tr:hover {
+    background: var(--color-surface-alt);
+}
+
+.ministry-task-form__currency-cell {
+    text-align: right;
+    font-weight: 600;
+    font-family: 'Roboto Mono', monospace;
+}
+
+/* Remove button */
+.ministry-task-form__btn--remove {
+    background: transparent;
+    border: none;
+    padding: 0.5rem;
+    font-size: 1.2rem;
+    cursor: pointer;
+    opacity: 0.6;
+    transition: opacity 0.2s;
+}
+
+.ministry-task-form__btn--remove:hover {
+    opacity: 1;
+}
+
+/* Expanded max-width for wider form */
+.ministry-task-form {
+    max-width: 1200px;
+}
+
+/* Primary button disabled state */
+.ministry-task-form__btn--primary:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Ensure table text is dark/readable */
+.ministry-task-form__table td {
+    color: #1e293b;
+    font-weight: 500;
+}
+
+[data-theme='dark'] .ministry-task-form__table td {
+    color: #e2e8f0;
+}

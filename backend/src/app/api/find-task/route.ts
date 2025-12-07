@@ -13,20 +13,16 @@ export async function POST(request: NextRequest) {
         // Prioritize by most specific?
         // Let's look for a task where `ograniczenie` matches ANY of the provided fields.
 
+
         const task = await prisma.zadanie_ministerstwo.findFirst({
             where: {
-                ograniczenie: {
-                    OR: [
-                        { komorka_organizacyjna: komorkaOrganizacyjna || undefined },
-                        { dzial: dzial || undefined },
-                        { rozdzial: rozdzial || undefined },
-                        { paragraf: paragraf || undefined },
-                        { czesc_budzetowa: czesc || undefined }
-                    ]
-                }
-            },
-            include: {
-                ograniczenie: true
+                OR: [
+                    { komorka_organizacyjna: komorkaOrganizacyjna || undefined },
+                    { dzial: dzial || undefined },
+                    { rozdzial: rozdzial || undefined },
+                    { paragraf: paragraf || undefined },
+                    { czesc_budzetowa: czesc || undefined }
+                ]
             },
             orderBy: {
                 data_utworzenia: 'desc'
@@ -39,12 +35,12 @@ export async function POST(request: NextRequest) {
 
         // Determine which constraint matched for display
         let matchedConstraint = '';
-        const ogr = task.ograniczenie;
-        if (ogr?.komorka_organizacyjna === komorkaOrganizacyjna && komorkaOrganizacyjna) matchedConstraint = `Komórka: ${komorkaOrganizacyjna}`;
-        else if (ogr?.dzial === dzial && dzial) matchedConstraint = `Dział: ${dzial}`;
-        else if (ogr?.rozdzial === rozdzial && rozdzial) matchedConstraint = `Rozdział: ${rozdzial}`;
-        else if (ogr?.paragraf === paragraf && paragraf) matchedConstraint = `Paragraf: ${paragraf}`;
-        else if (ogr?.czesc_budzetowa === czesc && czesc) matchedConstraint = `Część: ${czesc}`;
+        const ogr = task;
+        if (ogr.komorka_organizacyjna === komorkaOrganizacyjna && komorkaOrganizacyjna) matchedConstraint = `Komórka: ${komorkaOrganizacyjna}`;
+        else if (ogr.dzial === dzial && dzial) matchedConstraint = `Dział: ${dzial}`;
+        else if (ogr.rozdzial === rozdzial && rozdzial) matchedConstraint = `Rozdział: ${rozdzial}`;
+        else if (ogr.paragraf === paragraf && paragraf) matchedConstraint = `Paragraf: ${paragraf}`;
+        else if (ogr.czesc_budzetowa === czesc && czesc) matchedConstraint = `Część: ${czesc}`;
 
         return NextResponse.json({
             found: true,

@@ -28,7 +28,7 @@ async function main() {
     await prisma.zadanie_szczegoly.deleteMany();
     await prisma.dane_finansowe.deleteMany();
     await prisma.opis_zadania.deleteMany();
-    await prisma.ograniczenie.deleteMany();
+
     await prisma.budzet_zadaniowy_szczegolowy.deleteMany();
     await prisma.budzet_zadaniowy_skrocony.deleteMany();
     await prisma.rozdzial.deleteMany();
@@ -217,26 +217,16 @@ async function main() {
         generatedDetailsIds.push(detail.id);
     }
 
-    // 2. Seed `ograniczenie` using departments
-    console.log('📋 Seeding ograniczenia (restrictions)...');
-    const restrictionsIds: number[] = [];
-    for (const dept of departments) {
-        const restr = await prisma.ograniczenie.create({
-            data: {
-                komorka_organizacyjna: dept.name, // Using actual department names
-                czesc_budzetowa: getRandom(allParts).kod, // Example constraint
-            }
-        });
-        restrictionsIds.push(restr.id);
-    }
-
     // 3. Seed `zadanie_ministerstwo`
     console.log('📋 Seeding zadania ministerstwa...');
     const minTasksIds: number[] = [];
     for (let i = 0; i < 20; i++) {
         const t = await prisma.zadanie_ministerstwo.create({
             data: {
-                ograniczenie_id: getRandom(restrictionsIds),
+                // Flat fields (replacing restriction)
+                komorka_organizacyjna: Math.random() > 0.5 ? getRandom(departments).name : null,
+                czesc_budzetowa: Math.random() > 0.5 ? getRandom(allParts).kod : null,
+
                 kwota: parseFloat((Math.random() * 5000000).toFixed(2)),
                 stan: ['W przygotowaniu', 'Zatwierdzone', 'Odrzucone'][getRandomInt(0, 2)],
                 data_utworzenia: new Date(),

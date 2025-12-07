@@ -75,15 +75,7 @@ model grupa_wydatkow {
   pozycja_budzetu pozycja_budzetu[]
 }
 
-model ograniczenie {
-  id                    Int                    @id @default(autoincrement())
-  komorka_organizacyjna String?
-  dzial                 String?
-  rozdzial              String?
-  paragraf              String?
-  czesc_budzetowa       String?
-  zadanie_ministerstwo  zadanie_ministerstwo[]
-}
+
 
 model opis_zadania {
   id                      Int                 @id @default(autoincrement())
@@ -145,18 +137,25 @@ model rozdzial {
   @@index([dzial_id], map: "idx_rozdzial_dzial")
 }
 
-model zadanie_ministerstwo {
-  id              Int           @id @default(autoincrement())
-  ograniczenie_id Int?
-  termin_do       DateTime?
-  rok_budzetu     Int?
-  kwota           Float?
-  stan            String?
-  data_utworzenia DateTime?
-  ograniczenie    ograniczenie? @relation(fields: [ograniczenie_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  formularz       formularz[]
 
-  @@index([ograniczenie_id], map: "idx_zad_min_ograniczenie")
+model zadanie_ministerstwo {
+  id                    Int         @id @default(autoincrement())
+  termin_do             DateTime?
+  rok_budzetu           Int?
+  kwota                 Float?
+  stan                  String?
+  data_utworzenia       DateTime?
+  // Fields merged from ograniczenie
+  komorka_organizacyjna String?
+  dzial                 String?
+  rozdzial              String?
+  paragraf              String?
+  czesc_budzetowa       String?
+  zrodlo_finansowania   String?
+  grupa_wydatkow        String?
+  budzet_zadaniowy      String?
+  
+  formularz             formularz[]
 }
 
 model zadanie_szczegoly {

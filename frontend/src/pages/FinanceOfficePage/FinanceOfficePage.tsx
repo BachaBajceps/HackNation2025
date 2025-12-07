@@ -4,9 +4,10 @@ import { useTheme } from '../../context/ThemeContext';
 import { MinistryTaskForm } from '../../components/MinistryTaskForm';
 import { BudgetOverview } from '../../components/BudgetOverview';
 import { FormApproval } from '../../components/FormApproval';
+import { BBFSummary } from '../../components/BBFSummary';
 import './FinanceOfficePage.css';
 
-type FinanceView = 'dashboard' | 'budget' | 'forms' | 'reports' | 'settings' | 'ministry';
+type FinanceView = 'dashboard' | 'budget' | 'forms' | 'reports' | 'settings' | 'ministry' | 'summary';
 
 export const FinanceOfficePage: React.FC = () => {
     const { logout } = useAuth();
@@ -66,6 +67,15 @@ export const FinanceOfficePage: React.FC = () => {
                         </div>
                     </div>
                 );
+            case 'summary':
+                return (
+                    <div className="finance-page__view">
+                        <button className="finance-page__back-btn" onClick={() => setActiveView('dashboard')}>
+                            ← Powrót do panelu
+                        </button>
+                        <BBFSummary />
+                    </div>
+                );
             default:
                 return (
                     <>
@@ -112,6 +122,13 @@ export const FinanceOfficePage: React.FC = () => {
                                 <h3 className="finance-page__card-title">Ustawienia</h3>
                                 <p className="finance-page__card-desc">
                                     Zarządzaj limitami i parametrami systemu
+                                </p>
+                            </div>
+                            <div className="finance-page__card" onClick={() => setActiveView('summary')}>
+                                <div className="finance-page__card-icon">📑</div>
+                                <h3 className="finance-page__card-title">Zestawienie BBF</h3>
+                                <p className="finance-page__card-desc">
+                                    Pełne zestawienie danych budżetowych
                                 </p>
                             </div>
                         </div>

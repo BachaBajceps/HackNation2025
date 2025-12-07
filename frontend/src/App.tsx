@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { BudgetForm } from './components/BudgetForm';
 import { MinistryTaskForm } from './components/MinistryTaskForm';
+import { BBFSummary } from './components/BBFSummary';
 import './App.css';
 
-type FormType = 'budget' | 'ministry';
+type FormType = 'budget' | 'ministry' | 'bbf';
 
 function App() {
     const [activeForm, setActiveForm] = useState<FormType>('budget');
@@ -16,10 +17,10 @@ function App() {
                         <span className="app__logo">📊</span>
                         System Formularzy
                     </h1>
-                    <p className="app__subtitle">Wybierz typ formularza z listy poniżej</p>
+                    <p className="app__subtitle">Wybierz widok z menu poniżej</p>
                 </div>
                 <div className="app__form-selector">
-                    <label htmlFor="formType" className="app__form-selector-label">Typ formularza:</label>
+                    <label htmlFor="formType" className="app__form-selector-label">Menu:</label>
                     <select
                         id="formType"
                         value={activeForm}
@@ -28,6 +29,7 @@ function App() {
                     >
                         <option value="budget">Formularz Budżetowy</option>
                         <option value="ministry">Formularz Zadania od Ministerstwa</option>
+                        <option value="bbf">Biuro Budżetowo-Finansowe</option>
                     </select>
                 </div>
             </header>
@@ -35,6 +37,7 @@ function App() {
             <main className="app__main">
                 {activeForm === 'budget' && <BudgetForm />}
                 {activeForm === 'ministry' && <MinistryTaskForm />}
+                {activeForm === 'bbf' && <BBFSummary />}
             </main>
 
             <footer className="app__footer">

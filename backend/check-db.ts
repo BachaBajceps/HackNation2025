@@ -1,27 +1,27 @@
 import prisma from './src/lib/prisma';
 
-async function checkOrphanedData() {
-    const withoutDept = await prisma.pozycja_budzetu.count({
-        where: { nazwa_komorki_organizacyjnej: null }
+async function deleteFormsFromDeptA() {
+    // Find all pozycja_budzetu for Departament A
+    const pozycje = await prisma.pozycja_budzetu.findMany({
+        where: { nazwa_komorki_organizacyjnej: 'Departament A' },
+        include: { formularz: true }
     });
 
-    const total = await prisma.pozycja_budzetu.count();
+    console.log(`Found ${pozycje.length} pozycje for Departament A`);
 
-    console.log(`Pozycje bez przypisanego departamentu: ${withoutDept} / ${total}`);
-
-    // Check if there are any formularze at all
-    const allForms = await prisma.formularz.findMany({
-        include: {
-            pozycja_budzetu: {
-                select: { nazwa_komorki_organizacyjnej: true }
-            }
+    for (const poz of pozycje) {
+        // Delete formularze first (due to FK constraint)
+        for (const form of poz.formularz) {
+            await prisma.formularz.delete({ where: { id: form.id } });
+            console.log(`Deleted formularz #${form.id}`);
         }
-    });
 
-    console.log('\n=== All forms ===');
-    allForms.forEach(f => {
-        console.log(`Form #${f.id}: status="${f.status}", dept="${f.pozycja_budzetu?.nazwa_komorki_organizacyjnej}"`);
-    });
+        // Delete pozycja_budzetu
+        await prisma.pozycja_budzetu.delete({ where: { id: poz.id } });
+        console.log(`Deleted pozycja_budzetu #${poz.id}`);
+    }
+
+    console.log('Done!');
 }
 
-checkOrphanedData().catch(console.error);
+deleteFormsFromDeptA().catch(console.error);

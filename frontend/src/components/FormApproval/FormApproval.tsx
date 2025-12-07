@@ -184,17 +184,13 @@ export const FormApproval: React.FC = () => {
 
                 {/* Global Stats */}
                 <div className="form-approval__stats">
-                    <div className="form-approval__stat form-approval__stat--pending">
-                        <span className="form-approval__stat-value">{globalStats.pending}</span>
-                        <span className="form-approval__stat-label">Oczekujące</span>
-                    </div>
                     <div className="form-approval__stat form-approval__stat--approved">
-                        <span className="form-approval__stat-value">{globalStats.approved}</span>
-                        <span className="form-approval__stat-label">Zatwierdzone</span>
+                        <span className="form-approval__stat-value">{globalStats.pending}</span>
+                        <span className="form-approval__stat-label">Przesłane</span>
                     </div>
-                    <div className="form-approval__stat form-approval__stat--rejected">
-                        <span className="form-approval__stat-value">{globalStats.rejected}</span>
-                        <span className="form-approval__stat-label">Odrzucone</span>
+                    <div className="form-approval__stat form-approval__stat--pending">
+                        <span className="form-approval__stat-value">{globalStats.approved}</span>
+                        <span className="form-approval__stat-label">Oczekujące</span>
                     </div>
                 </div>
 
@@ -282,35 +278,7 @@ export const FormApproval: React.FC = () => {
                             </div>
                         )}
 
-                        {/* Decision section */}
-                        {currentStatus.status === 'pending' && filteredData.length > 0 && (
-                            <div className="form-approval__decision">
-                                <h3>Decyzja dla departamentu</h3>
-                                <div className="form-approval__comment-field">
-                                    <label>Komentarz (wymagany przy odrzuceniu):</label>
-                                    <textarea
-                                        value={comment}
-                                        onChange={e => setComment(e.target.value)}
-                                        placeholder="Wpisz komentarz do decyzji..."
-                                        rows={3}
-                                    />
-                                </div>
-                                <div className="form-approval__decision-buttons">
-                                    <button
-                                        className="form-approval__btn form-approval__btn--approve-large"
-                                        onClick={handleApproveDepartment}
-                                    >
-                                        ✓ Zatwierdź wszystkie formularze departamentu
-                                    </button>
-                                    <button
-                                        className="form-approval__btn form-approval__btn--reject-large"
-                                        onClick={handleRejectDepartment}
-                                    >
-                                        ✗ Odrzuć wszystkie formularze departamentu
-                                    </button>
-                                </div>
-                            </div>
-                        )}
+
 
                         {currentStatus.status !== 'pending' && currentStatus.komentarz && (
                             <div className="form-approval__decision-result">

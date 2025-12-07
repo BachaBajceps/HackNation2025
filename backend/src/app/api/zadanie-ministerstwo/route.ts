@@ -53,9 +53,22 @@ export async function POST(request: NextRequest) {
 
         // Delete existing constraints for this department (overwrite old ones)
         if (komorkaName) {
-            await prisma.zadanie_ministerstwo.deleteMany({
+            // First, unlink any forms connected to existing constraints for this department
+            const existingConstraints = await prisma.zadanie_ministerstwo.findMany({
                 where: { komorka_organizacyjna: komorkaName }
             });
+
+            if (existingConstraints.length > 0) {
+                const constraintIds = existingConstraints.map(c => c.id);
+                await prisma.formularz.updateMany({
+                    where: { zadanie_ministerstwo_id: { in: constraintIds } },
+                    data: { zadanie_ministerstwo_id: null }
+                });
+
+                await prisma.zadanie_ministerstwo.deleteMany({
+                    where: { komorka_organizacyjna: komorkaName }
+                });
+            }
         }
 
         // Create ministry task with flattened fields

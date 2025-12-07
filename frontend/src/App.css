@@ -181,6 +181,30 @@ h6 {
     color: var(--color-text-muted);
 }
 
+/* Header Actions */
+.app__header-actions {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.app__logout-btn {
+    padding: 0.625rem 1.25rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--color-text);
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.app__logout-btn:hover {
+    background: rgba(239, 68, 68, 0.2);
+    border-color: rgba(239, 68, 68, 0.5);
+}
+
 /* Scrollbar */
 ::-webkit-scrollbar {
     width: 8px;

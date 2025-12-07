@@ -212,24 +212,82 @@ export function oznaczJakoHistoryczny(id: number): boolean {
 }
 
 // Wysyla wszystkie drafty departamentu dla danego zadania
-export function wyslijWszystkieFormularzeDepartamentu(zadanieId: number, departamentId: number): number {
+export function wyslijWszystkieFormularzeDepartamentu(
+  zadanieId: number,
+  departamentId: number
+): number {
   const db = getDb();
-
-  // TODO: Walidacja wszystkich formularzy przed wyslaniem?
+  const now = new Date().toISOString();
 
   const result = db.prepare(`
     UPDATE formularze 
-    SET 
-      status = 'submitted', 
-      submitted_at = datetime('now')
-    WHERE 
-      zadanie_id = ? 
-      AND departament_id = ? 
-      AND status = 'draft'
-  `).run(zadanieId, departamentId);
+    SET status = 'submitted', submitted_at = ?
+    WHERE zadanie_id = ? AND departament_id = ? AND status = 'draft'
+  `).run(now, zadanieId, departamentId);
 
   return result.changes;
 }
+
+// Bulk import formularzy z danych Excel
+export interface ImportFormularzInput {
+  kod_rozdzialu?: string | null;
+  kod_paragrafu?: string | null;
+  zrodlo_finansowania?: string | null;
+  typ_wydatku?: string | null;
+  nazwa_zadania?: string | null;
+  jednostka_realizujaca?: string | null;
+  rok_1?: number | null;
+  rok_2?: number | null;
+  rok_3?: number | null;
+  rok_4?: number | null;
+  uzasadnienie?: string | null;
+}
+
+export function importujFormularze(
+  zadanieId: number,
+  departamentId: number,
+  formularze: ImportFormularzInput[]
+): number {
+  const db = getDb();
+  const now = new Date().toISOString();
+
+  const stmt = db.prepare(`
+    INSERT INTO formularze (
+      zadanie_id, departament_id, status, zadanie_wersja, created_at, version,
+      kod_rozdzialu, kod_paragrafu, zrodlo_finansowania, typ_wydatku,
+      nazwa_zadania, jednostka_realizujaca, rok_1, rok_2, rok_3, rok_4, uzasadnienie
+    ) VALUES (?, ?, 'draft', 1, ?, 1, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `);
+
+  let imported = 0;
+
+  const insertMany = db.transaction((items: ImportFormularzInput[]) => {
+    for (const f of items) {
+      stmt.run(
+        zadanieId,
+        departamentId,
+        now,
+        f.kod_rozdzialu || null,
+        f.kod_paragrafu || null,
+        f.zrodlo_finansowania || null,
+        f.typ_wydatku || null,
+        f.nazwa_zadania || null,
+        f.jednostka_realizujaca || null,
+        f.rok_1 || null,
+        f.rok_2 || null,
+        f.rok_3 || null,
+        f.rok_4 || null,
+        f.uzasadnienie || null
+      );
+      imported++;
+    }
+  });
+
+  insertMany(formularze);
+
+  return imported;
+}
+
 
 // Suma kwot dla departamentu w ramach zadania
 export function obliczSumeDepartamentu(zadanieId: number, departamentId: number): {

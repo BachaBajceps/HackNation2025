@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useBudgetForm } from '../../hooks/useBudgetForm';
 import { FormField } from '../FormField';
 import { FinancialYearGrid } from '../FinancialYearGrid';
@@ -18,7 +18,11 @@ import { ComboBox } from '../ComboBox';
 
 // ... (imports remain the same, ensure ComboBox is imported)
 
-export const BudgetForm: React.FC = () => {
+interface BudgetFormProps {
+    defaultKomorkaOrganizacyjna?: string | null;
+}
+
+export const BudgetForm: React.FC<BudgetFormProps> = ({ defaultKomorkaOrganizacyjna }) => {
     const [showSuccess, setShowSuccess] = useState(false);
     const {
         formData,
@@ -31,6 +35,13 @@ export const BudgetForm: React.FC = () => {
         reset,
         getError,
     } = useBudgetForm();
+
+    // Set default komorka organizacyjna from props (always update when prop changes)
+    useEffect(() => {
+        if (defaultKomorkaOrganizacyjna) {
+            updateField('komorkaOrganizacyjna', defaultKomorkaOrganizacyjna);
+        }
+    }, [defaultKomorkaOrganizacyjna, updateField]);
 
     const isProjectNameDisabled = formData.zrodloFinansowania === '0';
     const showDotationFields = isDotationParagraph(formData.paragraf);
@@ -266,13 +277,29 @@ export const BudgetForm: React.FC = () => {
                         />
                     </FormField>
 
-                    <ComboBox
-                        label="Nazwa komórki organizacyjnej"
-                        value={formData.komorkaOrganizacyjna}
-                        onChange={(val) => updateField('komorkaOrganizacyjna', val)}
-                        options={formatOptions(departments)}
-                        placeholder="Wybierz departament..."
-                    />
+                    {defaultKomorkaOrganizacyjna ? (
+                        <FormField
+                            label="Nazwa komórki organizacyjnej"
+                            htmlFor="komorka"
+                        >
+                            <input
+                                type="text"
+                                id="komorka"
+                                value={formData.komorkaOrganizacyjna}
+                                readOnly
+                                className="budget-form__input budget-form__input--readonly"
+                                style={{ backgroundColor: '#f0f0f0', cursor: 'not-allowed' }}
+                            />
+                        </FormField>
+                    ) : (
+                        <ComboBox
+                            label="Nazwa komórki organizacyjnej"
+                            value={formData.komorkaOrganizacyjna}
+                            onChange={(val) => updateField('komorkaOrganizacyjna', val)}
+                            options={formatOptions(departments)}
+                            placeholder="Wybierz departament..."
+                        />
+                    )}
 
                     <FormField
                         label="Dysponent środków"

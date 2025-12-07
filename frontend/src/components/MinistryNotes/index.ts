@@ -1,0 +1,1 @@
+export { MinistryNotes } from './MinistryNotes';

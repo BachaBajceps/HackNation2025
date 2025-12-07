@@ -1,56 +1,122 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { useAuth } from '../context/AuthContext';
 import { Formularz } from '../types/budget';
+import { parseExcelFile, ParsedFormularz } from '../utils/excelParser';
+import { ImportPreviewModal } from './ImportPreviewModal';
 
-interface DepartmentDashboardProps {
-    departamentId?: number; // Opcjonalne, domyślnie 1
+interface BudgetPosition {
+    id: number;
+    czesc: string;
+    dzial: string;
+    rozdzial: string;
+    paragraf: string;
+    zrodloFinansowania: string;
+    grupaWydatkow: string;
+    nazwaProjektu: string;
+    komorkaOrganizacyjna: string;
+    nazwaZadania: string;
+    potrzeby2026: number | null;
+    limit2026: number | null;
+    roznica2026: number | null;
 }
 
-export const DepartmentDashboard: React.FC<DepartmentDashboardProps> = ({ departamentId = 1 }) => {
-    const [forms, setForms] = useState<Formularz[]>([]);
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+interface DepartmentDashboardProps { }
+
+export const DepartmentDashboard: React.FC<DepartmentDashboardProps> = () => {
+    const { departmentName } = useAuth();
+    const [budgetPositions, setBudgetPositions] = useState<BudgetPosition[]>([]);
     const [loading, setLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
+
+    // Excel import state
+    const [importData, setImportData] = useState<ParsedFormularz[] | null>(null);
+    const [importLoading, setImportLoading] = useState(false);
     const [sendLoading, setSendLoading] = useState(false);
-    const fileInputRef = React.useRef<HTMLInputElement>(null);
+    
+    // Ref dla input file
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
-    // Mockowe zadanie_id, normalnie powinno przychodzić z kontekstu lub wyboru
+    // Mockowe dane - w produkcji powinny pochodzić z kontekstu lub API
     const zadanieId = 1;
+    // Zakładamy, że ID departamentu przychodzi z AuthContext lub mapowania
+    const departamentId = 1; 
 
-    const fetchForms = async () => {
+    const fetchBudgetPositions = async () => {
         setLoading(true);
-        setError(null);
         try {
-            const response = await fetch(`/api/formularze?departament_id=${departamentId}&zadanie_id=${zadanieId}`);
+            const komorka = departmentName || '';
+            const response = await fetch(`/api/budzet/zestawienie?komorka=${encodeURIComponent(komorka)}`);
             const result = await response.json();
             if (result.success) {
-                setForms(result.data);
-            } else {
-                setError(result.error || 'Błąd pobierania formularzy');
+                setBudgetPositions(result.data || []);
             }
         } catch (err) {
-            setError('Błąd połączenia z serwerem');
+            console.error('Error fetching budget positions:', err);
         } finally {
             setLoading(false);
         }
     };
 
     useEffect(() => {
-        fetchForms();
-    }, [departamentId, zadanieId]);
+        fetchBudgetPositions();
+    }, [departmentName]);
 
     const handleImportClick = () => {
         fileInputRef.current?.click();
     };
 
-    const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
         if (file) {
-            alert(`Wybrano plik: ${file.name}. Import danych zostanie zaimplementowany później.`);
-            // TODO: Implement Excel import logic here
+            try {
+                const parsed = await parseExcelFile(file);
+                if (parsed.length === 0) {
+                    alert('Plik Excel nie zawiera danych do importu.');
+                    return;
+                }
+                setImportData(parsed);
+            } catch (err) {
+                alert(`Błąd: ${err instanceof Error ? err.message : 'Nieznany błąd'}`);
+            }
         }
         // Reset input value to allow selecting the same file again
         if (event.target) {
             event.target.value = '';
         }
+    };
+
+    const handleImportConfirm = async () => {
+        if (!importData) return;
+
+        setImportLoading(true);
+        try {
+            const response = await fetch('/api/formularze', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    akcja: 'bulk_import',
+                    departament_id: departamentId,
+                    zadanie_id: zadanieId,
+                    formularze: importData,
+                })
+            });
+            const result = await response.json();
+            if (result.success) {
+                alert(`Pomyślnie zaimportowano ${result.data?.imported || importData.length} formularzy.`);
+                setImportData(null);
+                fetchBudgetPositions();
+            } else {
+                alert('Błąd importu: ' + (result.error || 'Nieznany błąd'));
+            }
+        } catch (err) {
+            alert('Błąd połączenia z serwerem');
+        } finally {
+            setImportLoading(false);
+        }
+    };
+
+    const handleImportCancel = () => {
+        setImportData(null);
     };
 
     const handleSendAll = async () => {
@@ -70,7 +136,7 @@ export const DepartmentDashboard: React.FC<DepartmentDashboardProps> = ({ depart
             const result = await response.json();
             if (result.success) {
                 alert(`Wysłano ${result.data.zmienione} formularzy.`);
-                fetchForms(); // Odśwież listę
+                fetchBudgetPositions(); // Odśwież listę
             } else {
                 alert('Błąd: ' + (result.error || 'Nieznany błąd'));
             }
@@ -81,89 +147,108 @@ export const DepartmentDashboard: React.FC<DepartmentDashboardProps> = ({ depart
         }
     };
 
-    const getStatusLabel = (status: string) => {
-        switch (status) {
-            case 'draft': return 'Roboczy';
-            case 'submitted': return 'Wysłany';
-            case 'historical': return 'Historyczny';
-            case 'archived': return 'Archiwalny';
-            default: return status;
-        }
+    const formatCurrency = (value: number | null) => {
+        if (value === null || value === undefined) return '-';
+        return value.toLocaleString('pl-PL', { style: 'currency', currency: 'PLN' });
     };
 
     return (
         <div className="department-dashboard">
             <header className="dashboard-header">
-                <h2>Panel Departamentu (ID: {departamentId})</h2>
+                <h2>Panel Departamentu: {departmentName}</h2>
                 <div className="header-actions">
-                    <input
-                        type="file"
-                        ref={fileInputRef}
-                        style={{ display: 'none' }}
+                    <input 
+                        type="file" 
+                        ref={fileInputRef} 
+                        onChange={handleFileChange} 
+                        style={{ display: 'none' }} 
                         accept=".xlsx, .xls"
-                        onChange={handleFileChange}
                     />
-                    <button
-                        className="btn btn-secondary"
+                    <button 
+                        className="btn btn-primary" 
                         onClick={handleImportClick}
-                        disabled={loading}
-                        style={{ marginRight: '10px' }}
+                        disabled={importLoading || loading}
                     >
-                        Załaduj dane z XLS
+                        Importuj Excel
                     </button>
-                    <button
-                        className="btn btn-primary"
+                    <button 
+                        className="btn btn-success" 
                         onClick={handleSendAll}
                         disabled={sendLoading || loading}
+                        style={{ marginLeft: '10px' }}
                     >
-                        {sendLoading ? 'Wysyłanie...' : 'Wyślij wszystkie formularze'}
+                        {sendLoading ? 'Wysyłanie...' : 'Wyślij wszystko'}
+                    </button>
+                    <button
+                        className="btn btn-secondary"
+                        onClick={fetchBudgetPositions}
+                        disabled={loading}
+                        style={{ marginLeft: '10px' }}
+                    >
+                        Odśwież
                     </button>
                 </div>
             </header>
 
-            {error && <div className="error-message">{error}</div>}
-
             {loading ? (
                 <div className="loading">Ładowanie...</div>
             ) : (
-                <table className="forms-table">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Modyfikacja</th>
-                            <th>Kody (R/P)</th>
-                            <th>Zadanie</th>
-                            <th>Status</th>
-                            <th>Kwota 2026</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {forms.length === 0 ? (
-                            <tr><td colSpan={6} style={{ textAlign: 'center' }}>Brak formularzy</td></tr>
-                        ) : (
-                            forms.map(form => (
-                                <tr key={form.id} className={`status-${form.status}`}>
-                                    <td>{form.id}</td>
-                                    <td>{new Date(form.created_at).toLocaleDateString()}</td>
-                                    <td>{form.kod_rozdzialu || '-'}/{form.kod_paragrafu || '-'}</td>
-                                    <td>{form.nazwa_zadania || '(Brak nazwy)'}</td>
-                                    <td>
-                                        <span className={`badge badge-${form.status}`}>
-                                            {getStatusLabel(form.status)}
-                                        </span>
-                                    </td>
-                                    <td>{form.rok_1?.toLocaleString() || '0'} PLN</td>
-                                </tr>
-                            ))
-                        )}
-                    </tbody>
-                </table>
+                <div className="table-container">
+                    <h3>Zestawienie pozycji budżetowych</h3>
+                    <table className="forms-table">
+                        <thead>
+                            <tr>
+                                <th>Lp.</th>
+                                <th>Część</th>
+                                <th>Dział</th>
+                                <th>Rozdział</th>
+                                <th>Paragraf</th>
+                                <th>Źródło</th>
+                                <th>Grupa wydatków</th>
+                                <th>Nazwa zadania</th>
+                                <th>Potrzeby 2026</th>
+                                <th>Limit 2026</th>
+                                <th>Różnica</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {budgetPositions.length === 0 ? (
+                                <tr><td colSpan={11} style={{ textAlign: 'center' }}>Brak formularzy dla tego departamentu</td></tr>
+                            ) : (
+                                budgetPositions.map((pos, index) => (
+                                    <tr key={pos.id}>
+                                        <td>{index + 1}</td>
+                                        <td>{pos.czesc}</td>
+                                        <td>{pos.dzial}</td>
+                                        <td>{pos.rozdzial}</td>
+                                        <td>{pos.paragraf}</td>
+                                        <td>{pos.zrodloFinansowania}</td>
+                                        <td>{pos.grupaWydatkow}</td>
+                                        <td>{pos.nazwaZadania || pos.nazwaProjektu || '-'}</td>
+                                        <td className="currency">{formatCurrency(pos.potrzeby2026)}</td>
+                                        <td className="currency">{formatCurrency(pos.limit2026)}</td>
+                                        <td className="currency">{formatCurrency(pos.roznica2026)}</td>
+                                    </tr>
+                                ))
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+            )}
+
+            {importData && (
+                <ImportPreviewModal
+                    data={importData}
+                    onConfirm={handleImportConfirm}
+                    onCancel={handleImportCancel}
+                    isLoading={importLoading}
+                />
             )}
 
             <style>{`
                 .department-dashboard {
                     padding: 20px;
-                    max-width: 1200px;
+                    max-width: 1400px;
                     margin: 0 auto;
                 }
                 .dashboard-header {
@@ -174,52 +259,89 @@ export const DepartmentDashboard: React.FC<DepartmentDashboardProps> = ({ depart
                     padding-bottom: 20px;
                     border-bottom: 1px solid #eee;
                 }
+                .dashboard-header h2 {
+                    margin: 0;
+                    color: var(--color-text-primary, #333);
+                }
+                .table-container h3 {
+                    margin-top: 0;
+                    margin-bottom: 15px;
+                    font-size: 1.2rem;
+                    color: var(--color-text-secondary, #666);
+                }
                 .forms-table {
                     width: 100%;
                     border-collapse: collapse;
-                    background: white;
+                    background: var(--color-surface, white);
                     box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+                    border-radius: 8px;
+                    overflow: hidden;
                 }
                 .forms-table th, .forms-table td {
                     padding: 12px;
                     text-align: left;
-                    border-bottom: 1px solid #eee;
+                    border-bottom: 1px solid var(--color-border, #eee);
+                    color: var(--color-text-primary, #333);
                 }
                 .forms-table th {
-                    background-color: #f8f9fa;
+                    background-color: var(--color-surface-alt, #f8f9fa);
                     font-weight: 600;
+                    font-size: 0.9rem;
+                    text-transform: uppercase;
+                    letter-spacing: 0.5px;
                 }
-                .badge {
-                    padding: 4px 8px;
-                    border-radius: 4px;
-                    font-size: 0.85em;
+                .forms-table tbody tr:hover {
+                    background-color: var(--color-surface-hover, #f1f5f9);
                 }
-                .badge-draft { background: #e2e8f0; color: #4a5568; }
-                .badge-submitted { background: #c6f6d5; color: #276749; }
-                .btn {
-                    padding: 10px 20px;
-                    border-radius: 6px;
-                    border: none;
-                    cursor: pointer;
+                .currency {
+                    text-align: right;
+                    font-family: 'Roboto Mono', monospace;
                     font-weight: 500;
                 }
+                .btn {
+                    padding: 8px 16px;
+                    border-radius: 6px;
+                    border: 1px solid var(--color-border, #ccc);
+                    cursor: pointer;
+                    font-weight: 500;
+                    background: var(--color-surface, white);
+                    color: var(--color-text-primary, #333);
+                    transition: all 0.2s;
+                }
+                .btn:hover {
+                    background: var(--color-surface-hover, #f1f5f9);
+                }
                 .btn-primary {
-                    background-color: #3182ce;
+                    background-color: #007bff;
                     color: white;
+                    border: none;
                 }
                 .btn-primary:hover {
-                    background-color: #2c5282;
+                    background-color: #0056b3;
                 }
-                .btn-secondary {
-                    background-color: #718096;
+                .btn-success {
+                    background-color: #28a745;
                     color: white;
+                    border: none;
                 }
-                .btn-secondary:hover {
-                    background-color: #4a5568;
+                .btn-success:hover {
+                    background-color: #218838;
                 }
                 .btn:disabled {
-                    opacity: 0.7;
+                    opacity: 0.6;
                     cursor: not-allowed;
+                }
+                .loading {
+                    text-align: center;
+                    padding: 40px;
+                    color: var(--color-text-secondary, #666);
+                }
+
+                /* Dark mode support via CSS variables */
+                @media (prefers-color-scheme: dark) {
+                    .dashboard-header {
+                        border-bottom-color: rgba(255,255,255,0.1);
+                    }
                 }
             `}</style>
         </div>

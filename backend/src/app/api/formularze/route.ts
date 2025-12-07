@@ -55,12 +55,33 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST /api/formularze - utworz nowy draft
+// POST /api/formularze - utworz nowy draft lub bulk import
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json() as FormularzInput;
+    const body = await request.json();
 
-    const walidacja = walidujFormularzInput(body);
+    // Bulk import from Excel
+    if (body.akcja === 'bulk_import') {
+      const { departament_id, zadanie_id, formularze } = body;
+
+      if (!departament_id || !zadanie_id || !Array.isArray(formularze)) {
+        return NextResponse.json<ApiResponse<null>>({
+          success: false,
+          error: 'Brak wymaganych parametrów: departament_id, zadanie_id, formularze'
+        }, { status: 400 });
+      }
+
+      const { importujFormularze } = await import('@/lib/services/formularzService');
+      const imported = importujFormularze(zadanie_id, departament_id, formularze);
+
+      return NextResponse.json<ApiResponse<{ imported: number }>>({
+        success: true,
+        data: { imported }
+      }, { status: 201 });
+    }
+
+    // Standard single form creation
+    const walidacja = walidujFormularzInput(body as FormularzInput);
     if (!walidacja.valid) {
       return NextResponse.json<ApiResponse<null>>({
         success: false,
@@ -69,7 +90,7 @@ export async function POST(request: NextRequest) {
       }, { status: 400 });
     }
 
-    const formularz = utworzFormularz(body);
+    const formularz = utworzFormularz(body as FormularzInput);
 
     return NextResponse.json<ApiResponse<typeof formularz>>({
       success: true,

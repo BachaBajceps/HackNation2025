@@ -51,6 +51,13 @@ export async function POST(request: NextRequest) {
             komorkaName = `Departament ${komorkaName.toUpperCase()}`;
         }
 
+        // Delete existing constraints for this department (overwrite old ones)
+        if (komorkaName) {
+            await prisma.zadanie_ministerstwo.deleteMany({
+                where: { komorka_organizacyjna: komorkaName }
+            });
+        }
+
         // Create ministry task with flattened fields
         const zadanieMinisterstwo = await prisma.zadanie_ministerstwo.create({
             data: {

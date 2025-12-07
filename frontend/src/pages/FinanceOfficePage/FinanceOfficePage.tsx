@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { MinistryTaskForm } from '../../components/MinistryTaskForm';
+import { BudgetOverview } from '../../components/BudgetOverview';
+import { FormApproval } from '../../components/FormApproval';
 import './FinanceOfficePage.css';
 
 type FinanceView = 'dashboard' | 'budget' | 'forms' | 'reports' | 'settings' | 'ministry';
@@ -26,10 +28,7 @@ export const FinanceOfficePage: React.FC = () => {
                         <button className="finance-page__back-btn" onClick={() => setActiveView('dashboard')}>
                             ← Powrót do panelu
                         </button>
-                        <div className="finance-page__placeholder">
-                            <h2>📊 Przegląd Budżetu</h2>
-                            <p>Moduł w przygotowaniu...</p>
-                        </div>
+                        <BudgetOverview />
                     </div>
                 );
             case 'forms':
@@ -38,10 +37,7 @@ export const FinanceOfficePage: React.FC = () => {
                         <button className="finance-page__back-btn" onClick={() => setActiveView('dashboard')}>
                             ← Powrót do panelu
                         </button>
-                        <div className="finance-page__placeholder">
-                            <h2>📝 Formularze Departamentów</h2>
-                            <p>Moduł w przygotowaniu...</p>
-                        </div>
+                        <FormApproval />
                     </div>
                 );
             case 'reports':

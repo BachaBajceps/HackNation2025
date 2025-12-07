@@ -1,0 +1,134 @@
+.budget-overview {
+    color: white;
+}
+
+.budget-overview__header {
+    margin-bottom: 2rem;
+}
+
+.budget-overview__title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    margin: 0 0 0.5rem 0;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.budget-overview__subtitle {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 1rem;
+    margin: 0;
+}
+
+/* Summary Cards */
+.budget-overview__summary-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.budget-overview__card {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.budget-overview__card-icon {
+    font-size: 2rem;
+}
+
+.budget-overview__card-content {
+    display: flex;
+    flex-direction: column;
+}
+
+.budget-overview__card-value {
+    font-size: 1.25rem;
+    font-weight: 700;
+}
+
+.budget-overview__card-label {
+    font-size: 0.875rem;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+/* Table */
+.budget-overview__table-container {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.budget-overview__table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.budget-overview__table th,
+.budget-overview__table td {
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.budget-overview__table th {
+    background: rgba(255, 255, 255, 0.05);
+    font-weight: 600;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.budget-overview__table tbody tr:hover {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.budget-overview__table tfoot td {
+    background: rgba(59, 130, 246, 0.1);
+    border-top: 2px solid rgba(59, 130, 246, 0.3);
+}
+
+.budget-overview__currency {
+    text-align: right;
+    font-family: 'JetBrains Mono', monospace;
+}
+
+.budget-overview__empty {
+    text-align: center;
+    color: rgba(255, 255, 255, 0.5);
+    padding: 3rem !important;
+}
+
+/* Loading */
+.budget-overview__loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 4rem;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.budget-overview__spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid rgba(255, 255, 255, 0.1);
+    border-top-color: #3b82f6;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 1rem;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}

@@ -18,6 +18,7 @@ interface BudgetPosition {
     potrzeby2026: number | null;
     limit2026: number | null;
     roznica2026: number | null;
+    status: string;
 }
 
 interface MinistryTask {
@@ -275,11 +276,12 @@ export const DepartmentDashboard: React.FC<DepartmentDashboardProps> = () => {
                                     <th>Potrzeby 2026</th>
                                     <th>Limit 2026</th>
                                     <th>Różnica</th>
+                                    <th>Status</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {budgetPositions.length === 0 ? (
-                                    <tr><td colSpan={11} style={{ textAlign: 'center' }}>Brak formularzy dla tego departamentu</td></tr>
+                                    <tr><td colSpan={12} style={{ textAlign: 'center' }}>Brak formularzy dla tego departamentu</td></tr>
                                 ) : (
                                     budgetPositions.map((pos, index) => (
                                         <tr key={pos.id}>
@@ -294,6 +296,15 @@ export const DepartmentDashboard: React.FC<DepartmentDashboardProps> = () => {
                                             <td className="currency">{formatCurrency(pos.potrzeby2026)}</td>
                                             <td className="currency">{formatCurrency(pos.limit2026)}</td>
                                             <td className="currency">{formatCurrency(pos.roznica2026)}</td>
+                                            <td>
+                                                <span className={`status-badge status-${pos.status?.toLowerCase() || 'brak'}`}>
+                                                    {pos.status === 'draft' ? 'Roboczy' :
+                                                        pos.status === 'sent' ? 'Przesłany' :
+                                                            pos.status === 'approved' ? 'Zatwierdzony' :
+                                                                pos.status === 'rejected' ? 'Odrzucony' :
+                                                                    pos.status || 'Brak'}
+                                                </span>
+                                            </td>
                                         </tr>
                                     ))
                                 )}
@@ -417,6 +428,33 @@ export const DepartmentDashboard: React.FC<DepartmentDashboardProps> = () => {
                 .loading {
                     text-align: center;
                     padding: 40px;
+                    color: var(--color-text-muted);
+                }
+                .status-badge {
+                    padding: 4px 10px;
+                    border-radius: 12px;
+                    font-size: 0.8rem;
+                    font-weight: 500;
+                    white-space: nowrap;
+                }
+                .status-draft {
+                    background: #fef3c7;
+                    color: #92400e;
+                }
+                .status-sent {
+                    background: #dbeafe;
+                    color: #1e40af;
+                }
+                .status-approved {
+                    background: #d1fae5;
+                    color: #047857;
+                }
+                .status-rejected {
+                    background: #fee2e2;
+                    color: #b91c1c;
+                }
+                .status-brak {
+                    background: var(--color-surface-alt);
                     color: var(--color-text-muted);
                 }
             `}</style>

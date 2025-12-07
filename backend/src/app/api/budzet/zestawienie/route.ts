@@ -23,6 +23,10 @@ export async function GET(request: NextRequest) {
                         opis_zadania: true,
                         dane_finansowe: true
                     }
+                },
+                formularz: {
+                    orderBy: { data_utworzenia: 'desc' },
+                    take: 1
                 }
             },
             orderBy: [
@@ -78,7 +82,9 @@ export async function GET(request: NextRequest) {
                 nrUmowy2029: daneFinansowe?.rok === 2029 ? daneFinansowe.nr_umowy || '' : '',
                 beneficjentDotacji: opisZadania?.dotacja_partner || '',
                 podstawaPrawnaDotacji: opisZadania?.dotacja_podstawa_prawna || '',
-                uwagi: opisZadania?.uwagi || ''
+                uwagi: opisZadania?.uwagi || '',
+                // Status from linked formularz (first one, ordered by date desc)
+                status: pozycja.formularz?.[0]?.status || 'brak'
             };
         });
 

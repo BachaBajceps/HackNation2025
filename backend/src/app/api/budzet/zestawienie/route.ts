@@ -84,7 +84,7 @@ export async function GET(request: NextRequest) {
                 podstawaPrawnaDotacji: opisZadania?.dotacja_podstawa_prawna || '',
                 uwagi: opisZadania?.uwagi || '',
                 // Status from linked formularz (first one, ordered by date desc)
-                status: pozycja.formularz?.[0]?.status || 'brak'
+                status: pozycja.formularz?.[0]?.status || 'draft'
             };
         });
 

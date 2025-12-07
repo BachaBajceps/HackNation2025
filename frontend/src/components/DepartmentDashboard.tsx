@@ -123,16 +123,35 @@ export const DepartmentDashboard: React.FC<DepartmentDashboardProps> = () => {
                     akcja: 'bulk_import',
                     departament_id: departamentId,
                     zadanie_id: zadanieId,
+                    komorka: departmentName,
                     formularze: importData,
                 })
             });
             const result = await response.json();
+            console.log('Import result:', result);
             if (result.success) {
-                alert(`Pomyślnie zaimportowano ${result.data?.imported || importData.length} formularzy.`);
+                let msg = `✅ Pomyślnie zaimportowano ${result.data?.imported || 0} formularzy.`;
+                if (result.data?.failed > 0) {
+                    msg += `\n⚠️ ${result.data.failed} formularzy nie udało się zaimportować.`;
+                    if (result.data.errors?.length > 0) {
+                        msg += '\n\nPrzykłady błędów:';
+                        result.data.errors.forEach((e: { index: number, error: string }) => {
+                            msg += `\n• Wiersz ${e.index + 1}: ${e.error.substring(0, 100)}`;
+                        });
+                    }
+                }
+                alert(msg);
                 setImportData(null);
                 fetchBudgetPositions();
             } else {
-                alert('Błąd importu: ' + (result.error || 'Nieznany błąd'));
+                let errorMsg = '❌ Błąd importu: ' + (result.error || 'Nieznany błąd');
+                if (result.details?.length > 0) {
+                    errorMsg += '\n\nSzczegóły:';
+                    result.details.forEach((e: { index: number, error: string }) => {
+                        errorMsg += `\n• Wiersz ${e.index + 1}: ${e.error.substring(0, 100)}`;
+                    });
+                }
+                alert(errorMsg);
             }
         } catch (err) {
             alert('Błąd połączenia z serwerem');

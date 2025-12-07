@@ -5,18 +5,188 @@ import prisma from '../../../lib/prisma';
 export async function POST(request: NextRequest) {
     try {
         const body = await request.json();
-        const { akcja, departament_id, zadanie_id, formularze } = body;
+        const { akcja, departament_id, zadanie_id, komorka, formularze } = body;
 
         if (akcja === 'bulk_import') {
+            console.log('=== BULK IMPORT ===');
+            console.log('Formularze count:', formularze?.length);
+            console.log('Department ID:', departament_id);
+            console.log('Komorka:', komorka);
+
             if (!formularze || !Array.isArray(formularze)) {
                 return NextResponse.json({ success: false, error: 'Brak danych do importu' }, { status: 400 });
             }
 
-            // For now, just return success with count
-            // In production, this would create pozycja_budzetu and formularz records
+            let imported = 0;
+            const errors: Array<{ index: number, error: string }> = [];
+
+            for (const form of formularze) {
+                try {
+                    // 1. Find or create czesc_budzetowa (required, use default "29" if not provided)
+                    let czescBudzetowaId = 1; // Default
+                    const czesc = await prisma.czesc_budzetowa.findFirst();
+                    if (czesc) czescBudzetowaId = czesc.id;
+
+                    // 2. Find rozdzial by kod and auto-fill dzial from first 3 digits
+                    let rozdzialId: number | null = null;
+                    let dzialId: number | null = null;
+
+                    if (form.kod_rozdzialu) {
+                        const rozdzialKod = String(form.kod_rozdzialu);
+                        const rozdzial = await prisma.rozdzial.findFirst({
+                            where: { kod: rozdzialKod }
+                        });
+                        if (rozdzial) {
+                            rozdzialId = rozdzial.id;
+                            // If rozdzial has dzial_id, use it
+                            if (rozdzial.dzial_id) {
+                                dzialId = rozdzial.dzial_id;
+                            }
+                        }
+
+                        // If dzial not found via rozdzial relation, try to find by first 3 digits
+                        if (!dzialId && rozdzialKod.length >= 3) {
+                            const dzialKod = rozdzialKod.substring(0, 3);
+                            const dzial = await prisma.dzial.findFirst({
+                                where: { kod: dzialKod }
+                            });
+                            if (dzial) dzialId = dzial.id;
+                        }
+                    }
+
+                    // 3. Find paragraf by kod
+                    let paragrafId: number | null = null;
+                    if (form.kod_paragrafu) {
+                        const paragraf = await prisma.paragraf.findFirst({
+                            where: { kod: String(form.kod_paragrafu) }
+                        });
+                        if (paragraf) paragrafId = paragraf.id;
+                    }
+
+                    // 4. Find zrodlo_finansowania by kod
+                    let zrodloId: number | null = null;
+                    if (form.zrodlo_finansowania) {
+                        const zrodlo = await prisma.zrodlo_finansowania.findFirst({
+                            where: { kod: String(form.zrodlo_finansowania) }
+                        });
+                        if (zrodlo) zrodloId = zrodlo.id;
+                    }
+
+                    // 5. Find grupa_wydatkow by nazwa
+                    let grupaId: number | null = null;
+                    if (form.typ_wydatku) {
+                        const grupa = await prisma.grupa_wydatkow.findFirst({
+                            where: { nazwa: { contains: String(form.typ_wydatku).substring(0, 20) } }
+                        });
+                        if (grupa) grupaId = grupa.id;
+                    }
+
+                    // 6. Create opis_zadania
+                    const opisZadania = await prisma.opis_zadania.create({
+                        data: {
+                            nazwa_zadania: form.nazwa_zadania || 'Zadanie bez nazwy',
+                            uzasadnienie: form.uzasadnienie || null
+                        }
+                    });
+
+                    // 7. Create dane_finansowe
+                    const daneFinansowe = await prisma.dane_finansowe.create({
+                        data: {
+                            rok: 2026,
+                            potrzeby_finansowe: form.rok_1 || 0,
+                            limit_wydatkow: null,
+                            kwota_niezabezpieczona: null
+                        }
+                    });
+
+                    // 8. Create zadanie_szczegoly
+                    const zadanieSzczegoly = await prisma.zadanie_szczegoly.create({
+                        data: {
+                            opis_zadania_id: opisZadania.id,
+                            dane_finansowe_id: daneFinansowe.id
+                        }
+                    });
+
+                    // 9. Create pozycja_budzetu
+                    const pozycjaBudzetu = await prisma.pozycja_budzetu.create({
+                        data: {
+                            zadanie_szczegoly_id: zadanieSzczegoly.id,
+                            czesc_budzetowa_id: czescBudzetowaId,
+                            dzial_id: dzialId,
+                            rozdzial_id: rozdzialId,
+                            paragraf_id: paragrafId,
+                            zrodlo_finansowania_id: zrodloId,
+                            grupa_wydatkow_id: grupaId,
+                            nazwa_komorki_organizacyjnej: (form.jednostka_realizujaca && form.jednostka_realizujaca !== 'null' && form.jednostka_realizujaca !== 'undefined')
+                                ? form.jednostka_realizujaca
+                                : (komorka && komorka !== 'null' && komorka !== 'undefined' ? komorka : null),
+                            nazwa_programu_projektu: form.nazwa_zadania || null
+                        }
+                    });
+
+                    // 10. Verify zadanie_ministerstwo exists if provided
+                    let validZadanieId: number | null = null;
+                    if (zadanie_id) {
+                        const zadanieExists = await prisma.zadanie_ministerstwo.findUnique({
+                            where: { id: Number(zadanie_id) }
+                        });
+                        if (zadanieExists) {
+                            validZadanieId = Number(zadanie_id);
+                        }
+                    }
+
+                    // 11. Create formularz
+                    const formularz = await prisma.formularz.create({
+                        data: {
+                            pozycja_budzetu_id: pozycjaBudzetu.id,
+                            zadanie_ministerstwo_id: validZadanieId,
+                            data_utworzenia: new Date(),
+                            status: 'draft'
+                        }
+                    });
+
+                    console.log(`Imported form #${imported + 1}: formularz.id=${formularz.id}, pozycja.id=${pozycjaBudzetu.id}`);
+                    imported++;
+                } catch (err: unknown) {
+                    // Extract meaningful error message from Prisma or other errors
+                    let errorMsg = 'Nieznany błąd';
+                    if (err && typeof err === 'object') {
+                        const e = err as Record<string, unknown>;
+                        if (e.code) {
+                            // Prisma error
+                            errorMsg = `Prisma ${e.code}: ${e.meta ? JSON.stringify(e.meta) : 'brak szczegółów'}`;
+                        } else if (e.message && typeof e.message === 'string') {
+                            errorMsg = e.message;
+                        } else {
+                            errorMsg = JSON.stringify(err).substring(0, 200);
+                        }
+                    } else {
+                        errorMsg = String(err);
+                    }
+                    console.error('Error importing form:', errorMsg);
+                    console.error('Full error:', err);
+                    errors.push({ index: formularze.indexOf(form), error: errorMsg });
+                }
+            }
+
+            console.log(`Import complete: ${imported} successful, ${errors.length} failed`);
+
+            // Return with error details if some imports failed
+            if (errors.length > 0 && imported === 0) {
+                return NextResponse.json({
+                    success: false,
+                    error: `Wszystkie ${errors.length} formularzy nie zostały zaimportowane`,
+                    details: errors.slice(0, 5) // Show first 5 errors
+                }, { status: 400 });
+            }
+
             return NextResponse.json({
                 success: true,
-                data: { imported: formularze.length }
+                data: {
+                    imported,
+                    failed: errors.length,
+                    errors: errors.slice(0, 3) // Include some error details
+                }
             });
         }
 

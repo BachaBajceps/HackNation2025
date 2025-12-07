@@ -32,14 +32,14 @@ export const DepartmentDashboard: React.FC<DepartmentDashboardProps> = () => {
     const [importData, setImportData] = useState<ParsedFormularz[] | null>(null);
     const [importLoading, setImportLoading] = useState(false);
     const [sendLoading, setSendLoading] = useState(false);
-    
+
     // Ref dla input file
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     // Mockowe dane - w produkcji powinny pochodzić z kontekstu lub API
     const zadanieId = 1;
     // Zakładamy, że ID departamentu przychodzi z AuthContext lub mapowania
-    const departamentId = 1; 
+    const departamentId = 1;
 
     const fetchBudgetPositions = async () => {
         setLoading(true);
@@ -157,22 +157,22 @@ export const DepartmentDashboard: React.FC<DepartmentDashboardProps> = () => {
             <header className="dashboard-header">
                 <h2>Panel Departamentu: {departmentName}</h2>
                 <div className="header-actions">
-                    <input 
-                        type="file" 
-                        ref={fileInputRef} 
-                        onChange={handleFileChange} 
-                        style={{ display: 'none' }} 
+                    <input
+                        type="file"
+                        ref={fileInputRef}
+                        onChange={handleFileChange}
+                        style={{ display: 'none' }}
                         accept=".xlsx, .xls"
                     />
-                    <button 
-                        className="btn btn-primary" 
+                    <button
+                        className="btn btn-primary"
                         onClick={handleImportClick}
                         disabled={importLoading || loading}
                     >
                         Importuj Excel
                     </button>
-                    <button 
-                        className="btn btn-success" 
+                    <button
+                        className="btn btn-success"
                         onClick={handleSendAll}
                         disabled={sendLoading || loading}
                         style={{ marginLeft: '10px' }}
@@ -257,75 +257,88 @@ export const DepartmentDashboard: React.FC<DepartmentDashboardProps> = () => {
                     align-items: center;
                     margin-bottom: 20px;
                     padding-bottom: 20px;
-                    border-bottom: 1px solid #eee;
+                    border-bottom: 1px solid var(--color-border);
                 }
                 .dashboard-header h2 {
                     margin: 0;
-                    color: var(--color-text-primary, #333);
+                    color: var(--color-text);
                 }
                 .table-container h3 {
                     margin-top: 0;
                     margin-bottom: 15px;
                     font-size: 1.2rem;
-                    color: var(--color-text-secondary, #666);
+                    color: var(--color-text-secondary);
                 }
                 .forms-table {
                     width: 100%;
                     border-collapse: collapse;
-                    background: var(--color-surface, white);
-                    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-                    border-radius: 8px;
+                    background: var(--color-surface);
+                    box-shadow: var(--shadow-sm);
+                    border-radius: var(--radius-lg);
                     overflow: hidden;
+                    border: 1px solid var(--color-border);
                 }
                 .forms-table th, .forms-table td {
                     padding: 12px;
                     text-align: left;
-                    border-bottom: 1px solid var(--color-border, #eee);
-                    color: var(--color-text-primary, #333);
+                    border-bottom: 1px solid var(--color-border);
+                    color: var(--color-text);
                 }
                 .forms-table th {
-                    background-color: var(--color-surface-alt, #f8f9fa);
+                    background-color: var(--color-surface-alt);
                     font-weight: 600;
                     font-size: 0.9rem;
                     text-transform: uppercase;
                     letter-spacing: 0.5px;
+                    color: var(--color-text-secondary);
                 }
                 .forms-table tbody tr:hover {
-                    background-color: var(--color-surface-hover, #f1f5f9);
+                    background-color: var(--color-surface-alt);
                 }
                 .currency {
                     text-align: right;
-                    font-family: 'Roboto Mono', monospace;
+                    font-family: 'JetBrains Mono', 'Consolas', monospace;
                     font-weight: 500;
                 }
                 .btn {
                     padding: 8px 16px;
-                    border-radius: 6px;
-                    border: 1px solid var(--color-border, #ccc);
+                    border-radius: var(--radius-md);
+                    border: 1px solid var(--color-border);
                     cursor: pointer;
                     font-weight: 500;
-                    background: var(--color-surface, white);
-                    color: var(--color-text-primary, #333);
+                    background: var(--color-surface);
+                    color: var(--color-text);
                     transition: all 0.2s;
                 }
                 .btn:hover {
-                    background: var(--color-surface-hover, #f1f5f9);
+                    background: var(--color-surface-alt);
                 }
                 .btn-primary {
-                    background-color: #007bff;
+                    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
                     color: white;
                     border: none;
                 }
                 .btn-primary:hover {
-                    background-color: #0056b3;
+                    transform: translateY(-1px);
+                    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
                 }
                 .btn-success {
-                    background-color: #28a745;
+                    background: linear-gradient(135deg, var(--color-success) 0%, var(--color-success-dark) 100%);
                     color: white;
                     border: none;
                 }
                 .btn-success:hover {
-                    background-color: #218838;
+                    transform: translateY(-1px);
+                    box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3);
+                }
+                .btn-secondary {
+                    background: var(--color-surface);
+                    color: var(--color-text);
+                    border: 1px solid var(--color-border);
+                }
+                .btn-secondary:hover {
+                    background: var(--color-surface-alt);
+                    border-color: var(--color-primary);
                 }
                 .btn:disabled {
                     opacity: 0.6;
@@ -334,14 +347,7 @@ export const DepartmentDashboard: React.FC<DepartmentDashboardProps> = () => {
                 .loading {
                     text-align: center;
                     padding: 40px;
-                    color: var(--color-text-secondary, #666);
-                }
-
-                /* Dark mode support via CSS variables */
-                @media (prefers-color-scheme: dark) {
-                    .dashboard-header {
-                        border-bottom-color: rgba(255,255,255,0.1);
-                    }
+                    color: var(--color-text-muted);
                 }
             `}</style>
         </div>

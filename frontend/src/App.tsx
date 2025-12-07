@@ -13,7 +13,6 @@ type FormType = 'budget' | 'notes' | 'department';
 function MainApp() {
     const { isLoggedIn, userType, departmentName, departmentId, logout } = useAuth();
     const { theme, toggleTheme } = useTheme();
-    const [activeForm, setActiveForm] = useState<FormType>('budget');
 
     // Not logged in -> show login page
     if (!isLoggedIn) {
@@ -25,7 +24,81 @@ function MainApp() {
         return <FinanceOfficePage />;
     }
 
-    // Department user -> show form with department header
+    // Department user -> show tile-based dashboard
+    const [activeView, setActiveView] = useState<FormType | 'dashboard'>('dashboard');
+
+    const renderDepartmentContent = () => {
+        switch (activeView) {
+            case 'budget':
+                return (
+                    <div className="app__view">
+                        <button className="app__back-btn" onClick={() => setActiveView('dashboard')}>
+                            ← Powrót do panelu
+                        </button>
+                        <BudgetForm defaultKomorkaOrganizacyjna={departmentName} />
+                    </div>
+                );
+            case 'notes':
+                return (
+                    <div className="app__view">
+                        <button className="app__back-btn" onClick={() => setActiveView('dashboard')}>
+                            ← Powrót do panelu
+                        </button>
+                        <MinistryNotes
+                            departmentId={departmentId || 1}
+                            departmentName={departmentName || ''}
+                        />
+                    </div>
+                );
+            case 'department':
+                return (
+                    <div className="app__view">
+                        <button className="app__back-btn" onClick={() => setActiveView('dashboard')}>
+                            ← Powrót do panelu
+                        </button>
+                        <DepartmentDashboard />
+                    </div>
+                );
+            default:
+                return (
+                    <>
+                        <div className="app__welcome">
+                            <h2 className="app__welcome-title">
+                                Panel {departmentName}
+                            </h2>
+                            <p className="app__welcome-subtitle">
+                                Wybierz moduł, nad którym chcesz pracować
+                            </p>
+                        </div>
+
+                        <div className="app__cards">
+                            <div className="app__card" onClick={() => setActiveView('budget')}>
+                                <div className="app__card-icon">📝</div>
+                                <h3 className="app__card-title">Formularz Budżetowy</h3>
+                                <p className="app__card-desc">
+                                    Utwórz i edytuj formularze budżetowe
+                                </p>
+                            </div>
+                            <div className="app__card" onClick={() => setActiveView('notes')}>
+                                <div className="app__card-icon">📋</div>
+                                <h3 className="app__card-title">Uwagi od Ministra</h3>
+                                <p className="app__card-desc">
+                                    Przeglądaj i odpowiadaj na uwagi
+                                </p>
+                            </div>
+                            <div className="app__card" onClick={() => setActiveView('department')}>
+                                <div className="app__card-icon">📊</div>
+                                <h3 className="app__card-title">Panel Departamentu</h3>
+                                <p className="app__card-desc">
+                                    Status formularzy i podsumowanie
+                                </p>
+                            </div>
+                        </div>
+                    </>
+                );
+        }
+    };
+
     return (
         <div className="app">
             <header className="app__header">
@@ -46,19 +119,6 @@ function MainApp() {
                     >
                         {theme === 'light' ? '🌙' : '☀️'}
                     </button>
-                    <div className="app__form-selector">
-                        <label htmlFor="formType" className="app__form-selector-label">Widok:</label>
-                        <select
-                            id="formType"
-                            value={activeForm}
-                            onChange={(e) => setActiveForm(e.target.value as FormType)}
-                            className="app__form-selector-select"
-                        >
-                            <option value="budget">Formularz Budżetowy</option>
-                            <option value="notes">Uwagi od Ministra</option>
-                            <option value="department">Panel Departamentu</option>
-                        </select>
-                    </div>
                     <button className="app__logout-btn" onClick={logout}>
                         Wyloguj się
                     </button>
@@ -66,18 +126,7 @@ function MainApp() {
             </header>
 
             <main className="app__main">
-                {activeForm === 'budget' && (
-                    <BudgetForm defaultKomorkaOrganizacyjna={departmentName} />
-                )}
-                {activeForm === 'notes' && (
-                    <MinistryNotes
-                        departmentId={departmentId || 1}
-                        departmentName={departmentName || ''}
-                    />
-                )}
-                {activeForm === 'department' && (
-                    <DepartmentDashboard />
-                )}
+                {renderDepartmentContent()}
             </main>
 
             <footer className="app__footer">

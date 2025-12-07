@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import { useTheme } from '../../context/ThemeContext';
 import { MinistryTaskForm } from '../../components/MinistryTaskForm';
 import { BudgetOverview } from '../../components/BudgetOverview';
 import { FormApproval } from '../../components/FormApproval';
@@ -9,6 +10,7 @@ type FinanceView = 'dashboard' | 'budget' | 'forms' | 'reports' | 'settings' | '
 
 export const FinanceOfficePage: React.FC = () => {
     const { logout } = useAuth();
+    const { theme, toggleTheme } = useTheme();
     const [activeView, setActiveView] = useState<FinanceView>('dashboard');
 
     const renderContent = () => {
@@ -125,9 +127,18 @@ export const FinanceOfficePage: React.FC = () => {
                     <span className="finance-page__icon">🏛️</span>
                     Biuro Budżetowo-Finansowe
                 </h1>
-                <button className="finance-page__logout" onClick={logout}>
-                    Wyloguj się
-                </button>
+                <div className="finance-page__header-actions">
+                    <button
+                        className="finance-page__theme-toggle"
+                        onClick={toggleTheme}
+                        title={`Przełącz na tryb ${theme === 'light' ? 'ciemny' : 'jasny'}`}
+                    >
+                        {theme === 'light' ? '🌙' : '☀️'}
+                    </button>
+                    <button className="finance-page__logout" onClick={logout}>
+                        Wyloguj się
+                    </button>
+                </div>
             </header>
 
             <main className="finance-page__content">

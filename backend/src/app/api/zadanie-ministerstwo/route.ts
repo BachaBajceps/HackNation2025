@@ -45,12 +45,18 @@ export async function POST(request: NextRequest) {
             );
         }
 
+        // Map department code to full name if it's a single letter
+        let komorkaName = data.komorka || null;
+        if (komorkaName && komorkaName.length === 1 && /^[A-Z]$/i.test(komorkaName)) {
+            komorkaName = `Departament ${komorkaName.toUpperCase()}`;
+        }
+
         // Create ministry task with flattened fields
         const zadanieMinisterstwo = await prisma.zadanie_ministerstwo.create({
             data: {
                 // Filter fields directly on the task
                 // @ts-ignore: Stale IDE cache - field exists in schema and tsc passes
-                komorka_organizacyjna: data.komorka || null,
+                komorka_organizacyjna: komorkaName,
                 dzial: data.dzial || null,
                 rozdzial: data.rozdzial || null,
                 paragraf: data.paragraf || null,
@@ -67,6 +73,29 @@ export async function POST(request: NextRequest) {
                 data_utworzenia: new Date(),
             },
         });
+
+        // Reset all forms in this department to 'draft' status
+        if (komorkaName) {
+            // Find all pozycja_budzetu for this department
+            const pozycje = await prisma.pozycja_budzetu.findMany({
+                where: { nazwa_komorki_organizacyjnej: komorkaName },
+                include: { formularz: true }
+            });
+
+            // Get all formularz IDs from these positions
+            const formIds = pozycje.flatMap(p => p.formularz.map(f => f.id));
+
+            if (formIds.length > 0) {
+                await prisma.formularz.updateMany({
+                    where: { id: { in: formIds } },
+                    data: {
+                        status: 'draft',
+                        data_przeslania: null,
+                        zadanie_ministerstwo_id: zadanieMinisterstwo.id
+                    }
+                });
+            }
+        }
 
         return NextResponse.json({
             success: true,

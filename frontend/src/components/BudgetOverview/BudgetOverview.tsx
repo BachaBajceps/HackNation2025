@@ -175,18 +175,100 @@ export const BudgetOverview: React.FC = () => {
     // Export to Excel (CSV format that Excel can open)
     const exportToExcel = () => {
         const headers = COLUMNS.map(c => c.label);
-        const rows = sortedData.map(row =>
-            COLUMNS.map(col => {
-                const val = row[col.key as keyof BudgetRow];
-                if (val === null || val === undefined) return '';
-                if (col.currency) return val;
-                return String(val).replace(/"/g, '""');
-            })
-        );
+
+        // Determine grouping field - use current sort field or default to komorkaOrganizacyjna
+        const groupField: SortField = sortField || 'komorkaOrganizacyjna';
+
+        // Sort data by the group field
+        const sortedForExport = [...filteredData].sort((a, b) => {
+            const aVal = a[groupField];
+            const bVal = b[groupField];
+            if (aVal === null || aVal === undefined) return 1;
+            if (bVal === null || bVal === undefined) return -1;
+            return String(aVal).localeCompare(String(bVal), 'pl', { numeric: true });
+        });
+
+        // Group data by the group field
+        const groupedData: Record<string, BudgetRow[]> = {};
+        sortedForExport.forEach(row => {
+            const groupValue = String(row[groupField] || 'Brak');
+            if (!groupedData[groupValue]) groupedData[groupValue] = [];
+            groupedData[groupValue].push(row);
+        });
+
+        // Build rows with summary rows after each group
+        const allRows: (string | number)[][] = [];
+
+        Object.entries(groupedData).forEach(([groupValue, groupRows]) => {
+            // Add all rows for this group
+            groupRows.forEach(row => {
+                allRows.push(COLUMNS.map(col => {
+                    const val = row[col.key as keyof BudgetRow];
+                    if (val === null || val === undefined) return '';
+                    if (col.currency) return val as number;
+                    return String(val).replace(/"/g, '""');
+                }));
+            });
+
+            // Calculate sums for financial columns
+            const sumPotrzeby2026 = groupRows.reduce((s, r) => s + (r.potrzeby2026 || 0), 0);
+            const sumLimit2026 = groupRows.reduce((s, r) => s + (r.limit2026 || 0), 0);
+            const sumRoznica2026 = groupRows.reduce((s, r) => s + (r.roznica2026 || 0), 0);
+            const sumKwotaUmowy2026 = groupRows.reduce((s, r) => s + (r.kwotaUmowy2026 || 0), 0);
+            const sumPotrzeby2027 = groupRows.reduce((s, r) => s + (r.potrzeby2027 || 0), 0);
+            const sumLimit2027 = groupRows.reduce((s, r) => s + (r.limit2027 || 0), 0);
+            const sumRoznica2027 = groupRows.reduce((s, r) => s + (r.roznica2027 || 0), 0);
+            const sumKwotaUmowy2027 = groupRows.reduce((s, r) => s + (r.kwotaUmowy2027 || 0), 0);
+            const sumPotrzeby2028 = groupRows.reduce((s, r) => s + (r.potrzeby2028 || 0), 0);
+            const sumLimit2028 = groupRows.reduce((s, r) => s + (r.limit2028 || 0), 0);
+            const sumRoznica2028 = groupRows.reduce((s, r) => s + (r.roznica2028 || 0), 0);
+            const sumKwotaUmowy2028 = groupRows.reduce((s, r) => s + (r.kwotaUmowy2028 || 0), 0);
+            const sumPotrzeby2029 = groupRows.reduce((s, r) => s + (r.potrzeby2029 || 0), 0);
+            const sumLimit2029 = groupRows.reduce((s, r) => s + (r.limit2029 || 0), 0);
+            const sumRoznica2029 = groupRows.reduce((s, r) => s + (r.roznica2029 || 0), 0);
+            const sumKwotaUmowy2029 = groupRows.reduce((s, r) => s + (r.kwotaUmowy2029 || 0), 0);
+
+            // Create summary row
+            const summaryRow: (string | number)[] = COLUMNS.map(col => {
+                // Put "Razem [value]" in the group column
+                if (col.key === groupField) {
+                    return `Razem ${groupValue}`;
+                }
+                // Financial sums
+                switch (col.key) {
+                    case 'potrzeby2026': return sumPotrzeby2026;
+                    case 'limit2026': return sumLimit2026;
+                    case 'roznica2026': return sumRoznica2026;
+                    case 'kwotaUmowy2026': return sumKwotaUmowy2026;
+                    case 'nrUmowy2026': return 'x';
+                    case 'potrzeby2027': return sumPotrzeby2027;
+                    case 'limit2027': return sumLimit2027;
+                    case 'roznica2027': return sumRoznica2027;
+                    case 'kwotaUmowy2027': return sumKwotaUmowy2027;
+                    case 'nrUmowy2027': return 'x';
+                    case 'potrzeby2028': return sumPotrzeby2028;
+                    case 'limit2028': return sumLimit2028;
+                    case 'roznica2028': return sumRoznica2028;
+                    case 'kwotaUmowy2028': return sumKwotaUmowy2028;
+                    case 'nrUmowy2028': return 'x';
+                    case 'potrzeby2029': return sumPotrzeby2029;
+                    case 'limit2029': return sumLimit2029;
+                    case 'roznica2029': return sumRoznica2029;
+                    case 'kwotaUmowy2029': return sumKwotaUmowy2029;
+                    case 'nrUmowy2029': return 'x';
+                    case 'beneficjentDotacji': return 'x';
+                    case 'podstawaPrawnaDotacji': return 'x';
+                    case 'uwagi': return 'x';
+                    default: return '';
+                }
+            });
+
+            allRows.push(summaryRow);
+        });
 
         const csvContent = [
             headers.map(h => `"${h}"`).join(';'),
-            ...rows.map(r => r.map(v => typeof v === 'number' ? v : `"${v}"`).join(';'))
+            ...allRows.map(r => r.map(v => typeof v === 'number' ? v : `"${v}"`).join(';'))
         ].join('\n');
 
         // Add BOM for Excel UTF-8 support

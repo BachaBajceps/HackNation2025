@@ -4,7 +4,8 @@ interface AuthContextType {
     isLoggedIn: boolean;
     userType: 'department' | 'finance' | null;
     departmentName: string | null;
-    login: (userType: 'department' | 'finance', departmentName?: string) => void;
+    departmentId: number | null;
+    login: (userType: 'department' | 'finance', departmentName?: string, departmentId?: number) => void;
     logout: () => void;
 }
 
@@ -14,21 +15,24 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [userType, setUserType] = useState<'department' | 'finance' | null>(null);
     const [departmentName, setDepartmentName] = useState<string | null>(null);
+    const [departmentId, setDepartmentId] = useState<number | null>(null);
 
-    const login = (type: 'department' | 'finance', name?: string) => {
+    const login = (type: 'department' | 'finance', name?: string, id?: number) => {
         setIsLoggedIn(true);
         setUserType(type);
         setDepartmentName(name || null);
+        setDepartmentId(id || (type === 'department' ? 1 : null)); // Domyślne ID 1 dla testów
     };
 
     const logout = () => {
         setIsLoggedIn(false);
         setUserType(null);
         setDepartmentName(null);
+        setDepartmentId(null);
     };
 
     return (
-        <AuthContext.Provider value={{ isLoggedIn, userType, departmentName, login, logout }}>
+        <AuthContext.Provider value={{ isLoggedIn, userType, departmentName, departmentId, login, logout }}>
             {children}
         </AuthContext.Provider>
     );

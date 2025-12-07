@@ -82,3 +82,40 @@ export async function POST(request: NextRequest) {
     }, { status: 500 });
   }
 }
+
+// PATCH /api/formularze - bulk actions (np. wyslanie wszystkich)
+export async function PATCH(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const { akcja, zadanie_id, departament_id } = body;
+
+    if (akcja === 'wyslij_wszystkie') {
+      if (!zadanie_id || !departament_id) {
+        return NextResponse.json<ApiResponse<null>>({
+          success: false,
+          error: 'Brak wymaganych parametrow: zadanie_id, departament_id'
+        }, { status: 400 });
+      }
+
+      // Dynamiczny import aby uniknac problemow z cyklicznymi zaleznosciami jesli by byly, 
+      // chociaz tutaj to raczej kwestia wygody edycji pliku
+      const { wyslijWszystkieFormularzeDepartamentu } = await import('@/lib/services/formularzService');
+      const zmienione = wyslijWszystkieFormularzeDepartamentu(zadanie_id, departament_id);
+
+      return NextResponse.json<ApiResponse<{ zmienione: number }>>({
+        success: true,
+        data: { zmienione }
+      });
+    }
+
+    return NextResponse.json<ApiResponse<null>>({
+      success: false,
+      error: 'Nieznana akcja'
+    }, { status: 400 });
+  } catch (error) {
+    return NextResponse.json<ApiResponse<null>>({
+      success: false,
+      error: error instanceof Error ? error.message : 'Nieznany blad'
+    }, { status: 500 });
+  }
+}

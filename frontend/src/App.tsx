@@ -6,10 +6,15 @@ import { BudgetForm } from './components/BudgetForm';
 import { MinistryTaskForm } from './components/MinistryTaskForm';
 import './App.css';
 
-type FormType = 'budget' | 'ministry';
+import { DepartmentDashboard } from './components/DepartmentDashboard';
+
+type FormType = 'budget' | 'ministry' | 'department';
+
+import { ThemeProvider, useTheme } from './context/ThemeContext';
 
 function MainApp() {
-    const { isLoggedIn, userType, departmentName, logout } = useAuth();
+    const { isLoggedIn, userType, departmentName, departmentId, logout } = useAuth();
+    const { theme, toggleTheme } = useTheme();
     const [activeForm, setActiveForm] = useState<FormType>('budget');
 
     // Not logged in -> show login page
@@ -36,6 +41,13 @@ function MainApp() {
                     </p>
                 </div>
                 <div className="app__header-actions">
+                    <button
+                        className="app__theme-toggle"
+                        onClick={toggleTheme}
+                        title={`Przełącz na tryb ${theme === 'light' ? 'ciemny' : 'jasny'}`}
+                    >
+                        {theme === 'light' ? '🌙' : '☀️'}
+                    </button>
                     <div className="app__form-selector">
                         <label htmlFor="formType" className="app__form-selector-label">Formularz:</label>
                         <select
@@ -46,6 +58,7 @@ function MainApp() {
                         >
                             <option value="budget">Formularz Budżetowy</option>
                             <option value="ministry">Formularz Zadania od Ministerstwa</option>
+                            <option value="department">Panel Departamentu</option>
                         </select>
                     </div>
                     <button className="app__logout-btn" onClick={logout}>
@@ -57,6 +70,7 @@ function MainApp() {
             <main className="app__main">
                 {activeForm === 'budget' && <BudgetForm />}
                 {activeForm === 'ministry' && <MinistryTaskForm />}
+                {activeForm === 'department' && <DepartmentDashboard departamentId={departmentId || 1} />}
             </main>
 
             <footer className="app__footer">
@@ -68,9 +82,11 @@ function MainApp() {
 
 function App() {
     return (
-        <AuthProvider>
-            <MainApp />
-        </AuthProvider>
+        <ThemeProvider>
+            <AuthProvider>
+                <MainApp />
+            </AuthProvider>
+        </ThemeProvider>
     );
 }
 

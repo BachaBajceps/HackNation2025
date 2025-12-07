@@ -113,3 +113,47 @@ export interface ValidationError {
     message: string;
     type: 'error' | 'warning';
 }
+
+export type StatusFormularza = 'draft' | 'submitted' | 'historical' | 'archived';
+
+export interface PolaFormularzaFiltrowane {
+    kod_rozdzialu: string | null;
+    kod_paragrafu: string | null;
+    kod_dzialania: string | null;
+    nazwa_zadania: string | null;
+    kategoria: string | null;
+    priorytet: string | null;
+    rok_1: number | null;
+    rok_2: number | null;
+    rok_3: number | null;
+    rok_4: number | null;
+    typ_wydatku: string | null;
+    zrodlo_finansowania: string | null;
+    jednostka_realizujaca: string | null;
+}
+
+export interface PolaFormularzaDodatkowe {
+    opis_szczegolowy: string | null;
+    uzasadnienie: string | null;
+    uwagi: string | null;
+    zalaczniki_ref: string | null;
+    osoba_odpowiedzialna: string | null;
+    telefon_kontaktowy: string | null;
+    email_kontaktowy: string | null;
+    data_rozpoczecia: string | null;
+    data_zakonczenia: string | null;
+    wskazniki_realizacji: string | null;
+}
+
+export interface Formularz extends PolaFormularzaFiltrowane, PolaFormularzaDodatkowe {
+    id: number;
+    zadanie_id: number;
+    departament_id: number;
+    wysylka_id: number | null;
+    status: StatusFormularza;
+    parent_formularz_id: number | null;
+    zadanie_wersja: number;
+    created_at: string;
+    submitted_at: string | null;
+    version: number;
+}

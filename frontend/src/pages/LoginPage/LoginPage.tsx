@@ -18,21 +18,12 @@ export const LoginPage: React.FC = () => {
         FINANCE_OFFICE
     ];
 
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        setError('');
-
-        if (!selectedDepartment) {
-            setError('Wybierz departament');
-            return;
-        }
-
-        // Generate expected credentials
-        // Normalize: lowercase, remove spaces, hyphens, and Polish diacritics
-        const normalizedName = selectedDepartment
+    // Helper to generate credentials
+    const getCredentials = (deptName: string) => {
+        const normalizedName = deptName
             .toLowerCase()
-            .replace(/\s+/g, '')      // Remove spaces
-            .replace(/-/g, '')        // Remove hyphens
+            .replace(/\s+/g, '')
+            .replace(/-/g, '')
             .replace(/ą/g, 'a')
             .replace(/ć/g, 'c')
             .replace(/ę/g, 'e')
@@ -42,15 +33,42 @@ export const LoginPage: React.FC = () => {
             .replace(/ś/g, 's')
             .replace(/ź/g, 'z')
             .replace(/ż/g, 'z');
-        const expectedEmail = `${normalizedName}@mail.com`;
-        const expectedPassword = normalizedName;
+        return {
+            email: `${normalizedName}@mail.com`,
+            password: normalizedName
+        };
+    };
 
-        if (email.toLowerCase() !== expectedEmail) {
+    const handleDepartmentChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const value = e.target.value;
+        setSelectedDepartment(value);
+        if (value) {
+            const creds = getCredentials(value);
+            setEmail(creds.email);
+            setPassword(creds.password);
+        } else {
+            setEmail('');
+            setPassword('');
+        }
+    };
+
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        setError('');
+
+        if (!selectedDepartment) {
+            setError('Wybierz departament');
+            return;
+        }
+
+        const expected = getCredentials(selectedDepartment);
+
+        if (email.toLowerCase() !== expected.email) {
             setError('Nieprawidłowy adres email');
             return;
         }
 
-        if (password !== expectedPassword) {
+        if (password !== expected.password) {
             setError('Nieprawidłowe hasło');
             return;
         }
@@ -81,7 +99,7 @@ export const LoginPage: React.FC = () => {
                             id="department"
                             className="login-page__select"
                             value={selectedDepartment}
-                            onChange={(e) => setSelectedDepartment(e.target.value)}
+                            onChange={handleDepartmentChange}
                         >
                             <option value="">-- Wybierz --</option>
                             {allOptions.map((name) => (

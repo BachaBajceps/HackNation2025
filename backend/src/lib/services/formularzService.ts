@@ -211,6 +211,26 @@ export function oznaczJakoHistoryczny(id: number): boolean {
   return result.changes > 0;
 }
 
+// Wysyla wszystkie drafty departamentu dla danego zadania
+export function wyslijWszystkieFormularzeDepartamentu(zadanieId: number, departamentId: number): number {
+  const db = getDb();
+
+  // TODO: Walidacja wszystkich formularzy przed wyslaniem?
+
+  const result = db.prepare(`
+    UPDATE formularze 
+    SET 
+      status = 'submitted', 
+      submitted_at = datetime('now')
+    WHERE 
+      zadanie_id = ? 
+      AND departament_id = ? 
+      AND status = 'draft'
+  `).run(zadanieId, departamentId);
+
+  return result.changes;
+}
+
 // Suma kwot dla departamentu w ramach zadania
 export function obliczSumeDepartamentu(zadanieId: number, departamentId: number): {
   suma_rok_1: number;

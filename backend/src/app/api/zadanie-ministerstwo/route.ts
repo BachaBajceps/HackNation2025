@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import type { Prisma } from '@prisma/client';
 import prisma from '../../../lib/prisma';
 
 interface FilterBasedTaskRequest {
@@ -75,7 +76,6 @@ export async function POST(request: NextRequest) {
         const zadanieMinisterstwo = await prisma.zadanie_ministerstwo.create({
             data: {
                 // Filter fields directly on the task
-                // @ts-ignore: Stale IDE cache - field exists in schema and tsc passes
                 komorka_organizacyjna: komorkaName,
                 dzial: data.dzial || null,
                 rozdzial: data.rozdzial || null,
@@ -142,7 +142,7 @@ export async function GET(request: NextRequest) {
         const rok = searchParams.get('rok');
         const komorka = searchParams.get('komorka');
 
-        const where: any = {};
+        const where: Prisma.Zadanie_ministerstwoWhereInput = {};
         if (rok) where.rok_budzetu = parseInt(rok);
         if (komorka) {
             where.OR = [

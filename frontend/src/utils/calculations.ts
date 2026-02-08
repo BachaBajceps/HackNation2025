@@ -1,5 +1,4 @@
 import { expenditureGroupMappings } from '../data/dictionaries';
-import { DaneFinansoweRoku } from '../types/budget';
 
 /**
  * Wyznacza grupę wydatków na podstawie paragrafu
@@ -61,49 +60,6 @@ export function formatCurrency(value: number | null): string {
         currency: 'PLN',
         minimumFractionDigits: 2,
     }).format(value);
-}
-
-/**
- * Parsuje string walutowy do liczby
- */
-export function parseCurrency(value: string): number | null {
-    if (!value || value.trim() === '') return null;
-
-    // Usuń spacje, znaki waluty i zamień przecinek na kropkę
-    const cleaned = value
-        .replace(/\s/g, '')
-        .replace(/zł/gi, '')
-        .replace(/PLN/gi, '')
-        .replace(/,/g, '.')
-        .trim();
-
-    const num = parseFloat(cleaned);
-    return isNaN(num) ? null : num;
-}
-
-/**
- * Aktualizuje dane finansowe roku z przeliczeniem gap
- */
-export function updateFinancialYearData(
-    data: DaneFinansoweRoku,
-    field: keyof DaneFinansoweRoku,
-    value: number | null | string
-): DaneFinansoweRoku {
-    const updated = { ...data, [field]: value };
-
-    // Przelicz gap gdy zmienia się needs lub limit
-    if (field === 'potrzeby' || field === 'limit') {
-        updated.roznica = calculateGap(updated.potrzeby, updated.limit);
-    }
-
-    return updated;
-}
-
-/**
- * Generuje unikalny identyfikator
- */
-export function generateId(): string {
-    return crypto.randomUUID();
 }
 
 /**

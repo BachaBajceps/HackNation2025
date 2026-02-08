@@ -167,9 +167,6 @@ async function main() {
     // --- LOGICAL DATA GENERATION ---
     console.log('🏗️  Building logical data structures with VALID SCENARIOS...');
 
-    // Helpers
-    const getCode = (code: string, arr: any[]) => arr.find(x => x.kod === code)?.id;
-
     // SCENARIO 1: IT Department Infrastructure Upgrade
     // Task Definition
     console.log('🔹 Scenario 1: IT Department - Infrastructure Upgrade');

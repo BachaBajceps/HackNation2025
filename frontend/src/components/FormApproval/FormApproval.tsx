@@ -39,8 +39,6 @@ export const FormApproval: React.FC = () => {
     const [selectedDepartment, setSelectedDepartment] = useState<string>('');
     const [allData, setAllData] = useState<BudgetRow[]>([]);
     const [loading, setLoading] = useState(false);
-    const [departmentStatuses, setDepartmentStatuses] = useState<Record<string, DepartmentStatus>>({});
-    const [comment, setComment] = useState('');
 
     // Extract unique departments from actual data
     const uniqueDepartments = useMemo(() => {
@@ -91,27 +89,7 @@ export const FormApproval: React.FC = () => {
         };
     }, [filteredData]);
 
-    const currentStatus = departmentStatuses[selectedDepartment] || { status: 'pending', komentarz: '' };
-
-    const handleApproveDepartment = () => {
-        setDepartmentStatuses(prev => ({
-            ...prev,
-            [selectedDepartment]: { status: 'approved', komentarz: comment }
-        }));
-        setComment('');
-    };
-
-    const handleRejectDepartment = () => {
-        if (!comment.trim()) {
-            alert('Podaj powód odrzucenia formularzy departamentu');
-            return;
-        }
-        setDepartmentStatuses(prev => ({
-            ...prev,
-            [selectedDepartment]: { status: 'rejected', komentarz: comment }
-        }));
-        setComment('');
-    };
+    const currentStatus: DepartmentStatus = { status: 'pending', komentarz: '' };
 
     const formatCurrency = (value: number) => {
         return value.toLocaleString('pl-PL', { style: 'currency', currency: 'PLN', minimumFractionDigits: 2 });
@@ -119,15 +97,8 @@ export const FormApproval: React.FC = () => {
 
     // Stats - only count departments that have data
     const globalStats = useMemo(() => {
-        let pending = 0, approved = 0, rejected = 0;
-        uniqueDepartments.forEach(deptName => {
-            const status = departmentStatuses[deptName]?.status || 'pending';
-            if (status === 'pending') pending++;
-            else if (status === 'approved') approved++;
-            else if (status === 'rejected') rejected++;
-        });
-        return { pending, approved, rejected };
-    }, [departmentStatuses, uniqueDepartments]);
+        return { pending: uniqueDepartments.length, approved: 0, rejected: 0 };
+    }, [uniqueDepartments]);
 
     return (
         <div className="form-approval">
@@ -142,7 +113,7 @@ export const FormApproval: React.FC = () => {
                 <ul className="form-approval__dept-list">
                     {uniqueDepartments.map(deptName => {
                         const count = allData.filter(r => r.komorkaOrganizacyjna === deptName).length;
-                        const status = departmentStatuses[deptName]?.status || 'pending';
+                        const status: DepartmentStatus['status'] = 'pending';
                         return (
                             <li
                                 key={deptName}
@@ -150,9 +121,7 @@ export const FormApproval: React.FC = () => {
                                 onClick={() => setSelectedDepartment(deptName)}
                             >
                                 <span className="form-approval__dept-status-icon">
-                                    {status === 'pending' && '⏳'}
-                                    {status === 'approved' && '✓'}
-                                    {status === 'rejected' && '✗'}
+                                    ⏳
                                 </span>
                                 {deptName}
                                 <span className="form-approval__dept-count">{count}</span>
@@ -175,9 +144,7 @@ export const FormApproval: React.FC = () => {
                     </div>
                     {selectedDepartment && (
                         <div className={`form-approval__dept-status-badge form-approval__dept-status-badge--${currentStatus.status}`}>
-                            {currentStatus.status === 'pending' && '⏳ Oczekuje na decyzję'}
-                            {currentStatus.status === 'approved' && '✓ Zatwierdzony'}
-                            {currentStatus.status === 'rejected' && '✗ Odrzucony'}
+                            ⏳ Oczekuje na decyzję
                         </div>
                     )}
                 </header>

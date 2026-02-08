@@ -1,4 +1,5 @@
 import Database from 'better-sqlite3';
+import fs from 'fs';
 import path from 'path';
 import { SCHEMA_SQL, SEED_DEPARTAMENTY_SQL } from './schema';
 
@@ -9,7 +10,6 @@ let db: Database.Database | null = null;
 export function getDb(): Database.Database {
   if (!db) {
     // Utworz folder data jesli nie istnieje
-    const fs = require('fs');
     const dataDir = path.dirname(DB_PATH);
     if (!fs.existsSync(dataDir)) {
       fs.mkdirSync(dataDir, { recursive: true });
@@ -32,17 +32,4 @@ function initializeSchema(database: Database.Database): void {
   if (count.cnt === 0) {
     database.exec(SEED_DEPARTAMENTY_SQL);
   }
-}
-
-export function closeDb(): void {
-  if (db) {
-    db.close();
-    db = null;
-  }
-}
-
-// Helper do transakcji
-export function transaction<T>(fn: (db: Database.Database) => T): T {
-  const database = getDb();
-  return database.transaction(fn)(database);
 }

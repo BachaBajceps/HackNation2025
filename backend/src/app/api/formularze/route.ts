@@ -201,7 +201,7 @@ export async function POST(request: NextRequest) {
 export async function PATCH(request: NextRequest) {
     try {
         const body = await request.json();
-        const { akcja, zadanie_id, departament_id, komorka } = body;
+        const { akcja, komorka } = body;
 
         if (akcja === 'wyslij_wszystkie') {
             // Require komorka parameter
@@ -404,8 +404,6 @@ export async function GET(request: NextRequest) {
     try {
         const { searchParams } = new URL(request.url);
         const status = searchParams.get('status');
-        const departament = searchParams.get('departament');
-
         const where: Record<string, unknown> = {};
         if (status) {
             where.status = status;

@@ -3,7 +3,6 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import { LoginPage } from './pages/LoginPage';
 import { FinanceOfficePage } from './pages/FinanceOfficePage';
 import { BudgetForm } from './components/BudgetForm';
-import { MinistryNotes } from './components/MinistryNotes';
 import { DepartmentDashboard } from './components/DepartmentDashboard';
 import { ThemeProvider, useTheme } from './context/ThemeContext';
 import './App.css';
@@ -11,7 +10,7 @@ import './App.css';
 type FormType = 'budget' | 'notes' | 'department';
 
 function MainApp() {
-    const { isLoggedIn, userType, departmentName, departmentId, logout } = useAuth();
+    const { isLoggedIn, userType, departmentName, logout } = useAuth();
     const { theme, toggleTheme } = useTheme();
 
     // Not logged in -> show login page

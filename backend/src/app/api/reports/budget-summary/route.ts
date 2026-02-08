@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import prisma from '../../../../lib/prisma';
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 
@@ -33,7 +33,7 @@ const chartColors = [
     rgb(0.4, 0.4, 0.4),   // szary
 ];
 
-export async function GET(request: NextRequest) {
+export async function GET() {
     try {
         // 1. Pobieranie danych
         const forms = await prisma.formularz.findMany({
@@ -59,7 +59,8 @@ export async function GET(request: NextRequest) {
             if (t.kwota) totalLimit += t.kwota;
         });
 
-        const byDept: Record<string, { forms: any[], sum: number }> = {};
+        type FormularzRecord = typeof forms[number];
+        const byDept: Record<string, { forms: FormularzRecord[]; sum: number }> = {};
 
         forms.forEach(f => {
             const dept = f.pozycja_budzetu?.nazwa_komorki_organizacyjnej || 'Inne';
@@ -87,7 +88,7 @@ export async function GET(request: NextRequest) {
         const lightGray = rgb(0.95, 0.95, 0.95);
 
         // === STRONA 1: Podsumowanie i wykresy ===
-        let page = pdfDoc.addPage([595, 842]);
+        const page = pdfDoc.addPage([595, 842]);
         const { width, height } = page.getSize();
 
         // Nagłówek
@@ -135,7 +136,6 @@ export async function GET(request: NextRequest) {
                 const segments = Math.max(1, Math.ceil(sweepAngle / 0.1));
                 for (let i = 0; i < segments; i++) {
                     const a1 = startAngle + (sweepAngle * i / segments);
-                    const a2 = startAngle + (sweepAngle * (i + 1) / segments);
 
                     // Rysuj trójkąt od środka
                     page.drawLine({

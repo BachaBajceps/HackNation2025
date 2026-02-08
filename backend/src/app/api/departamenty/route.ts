@@ -1,9 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { pobierzWszystkieDepartamenty } from '@/lib/services/departamentService';
 import type { ApiResponse, Departament } from '@/lib/types';
 
 // GET /api/departamenty - lista departamentow
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const departamenty = pobierzWszystkieDepartamenty();
 

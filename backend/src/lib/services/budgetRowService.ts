@@ -1,27 +1,72 @@
 import prisma from '../prisma';
-import type { WierszBudzetowyInput, WierszBudzetowyResponse, KluczRoku } from '../types/budgetRow';
+import type { WierszBudzetowyInput, WierszBudzetowyResponse, KluczRoku, DaneFinansoweRoku } from '../types/budgetRow';
+
+type SlownikModel =
+    | 'czesc_budzetowa'
+    | 'dzial'
+    | 'rozdzial'
+    | 'paragraf'
+    | 'zrodlo_finansowania'
+    | 'grupa_wydatkow';
 
 // Helper: znajdź lub utwórz rekord słownikowy po kodzie
 async function znajdzLubUtworzSlownik(
-    model: 'czesc_budzetowa' | 'dzial' | 'rozdzial' | 'paragraf' | 'zrodlo_finansowania' | 'grupa_wydatkow',
+    model: SlownikModel,
     kod: string,
     extraData?: Record<string, unknown>
 ): Promise<number | null> {
     if (!kod || kod.trim() === '') return null;
 
-    const istniejacy = await (prisma[model] as any).findFirst({
-        where: model === 'grupa_wydatkow' ? { nazwa: kod } : { kod },
-    });
+    const istniejacy = await (async () => {
+        switch (model) {
+            case 'czesc_budzetowa':
+                return prisma.czesc_budzetowa.findFirst({ where: { kod } });
+            case 'dzial':
+                return prisma.dzial.findFirst({ where: { kod } });
+            case 'rozdzial':
+                return prisma.rozdzial.findFirst({ where: { kod } });
+            case 'paragraf':
+                return prisma.paragraf.findFirst({ where: { kod } });
+            case 'zrodlo_finansowania':
+                return prisma.zrodlo_finansowania.findFirst({ where: { kod } });
+            case 'grupa_wydatkow':
+                return prisma.grupa_wydatkow.findFirst({ where: { nazwa: kod } });
+            default:
+                return null;
+        }
+    })();
 
     if (istniejacy) return istniejacy.id;
 
     // Twórz nowy rekord jeśli nie istnieje
-    const daneDoUtworzenia = model === 'grupa_wydatkow'
-        ? { nazwa: kod }
-        : { kod, ...extraData };
-
-    const utworzony = await (prisma[model] as any).create({ data: daneDoUtworzenia });
-    return utworzony.id;
+    switch (model) {
+        case 'czesc_budzetowa': {
+            const utworzony = await prisma.czesc_budzetowa.create({ data: { kod, ...(extraData ?? {}) } });
+            return utworzony.id;
+        }
+        case 'dzial': {
+            const utworzony = await prisma.dzial.create({ data: { kod, ...(extraData ?? {}) } });
+            return utworzony.id;
+        }
+        case 'rozdzial': {
+            const utworzony = await prisma.rozdzial.create({ data: { kod, ...(extraData ?? {}) } });
+            return utworzony.id;
+        }
+        case 'paragraf': {
+            const utworzony = await prisma.paragraf.create({ data: { kod, ...(extraData ?? {}) } });
+            return utworzony.id;
+        }
+        case 'zrodlo_finansowania': {
+            const utworzony = await prisma.zrodlo_finansowania.create({ data: { kod, ...(extraData ?? {}) } });
+            return utworzony.id;
+        }
+        case 'grupa_wydatkow': {
+            const utworzony = await prisma.grupa_wydatkow.create({ data: { nazwa: kod } });
+            return utworzony.id;
+        }
+        default:
+            return null;
+    }
 }
 
 // Helper: znajdź budżet zadaniowy szczegółowy po kodzie
@@ -220,7 +265,7 @@ export async function pobierzWszystkieWiersze(): Promise<WierszBudzetowyResponse
         const opis = zs?.opis_zadania;
 
         // Zbierz dane finansowe
-        const daneFinansowe: Record<KluczRoku, any> = {
+        const daneFinansowe: Record<KluczRoku, DaneFinansoweRoku> = {
             '2026': utworzPusteDaneRoku(2026),
             '2027': utworzPusteDaneRoku(2027),
             '2028': utworzPusteDaneRoku(2028),
@@ -278,10 +323,4 @@ function utworzPusteDaneRoku(rok: number) {
         zaangazowanie: null,
         nrUmowy: '',
     };
-}
-
-// Pobierz pojedynczy wiersz po ID
-export async function pobierzWierszPoId(id: number): Promise<WierszBudzetowyResponse | null> {
-    const wiersze = await pobierzWszystkieWiersze();
-    return wiersze.find((w) => w.id === id.toString()) || null;
 }
